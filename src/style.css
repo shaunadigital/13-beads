@@ -607,3 +607,41 @@ header { gap: 8px; min-height: 44px; }
 /* Until the loop closes, the card preview is a plain tile rather than broken-image text. */
 .card-thumb { color: transparent; font-size: 0; }
 .card-thumb:not([src]) { visibility: visible; }
+
+/* Start screen: covers the load, says what to do, and the Start tap turns on sound. */
+.intro {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px 20px;
+  padding-top: max(24px, env(safe-area-inset-top, 0px)); padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  background: radial-gradient(120% 80% at 50% 30%, var(--stage-a), var(--bg) 70%);
+  overflow-y: auto; transition: opacity .45s ease, visibility 0s linear .45s;
+}
+.intro.out { opacity: 0; visibility: hidden; pointer-events: none; }
+.intro-card { width: min(100%, 380px); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+.intro-logo { width: 112px; height: 112px; margin-bottom: 2px; animation: intro-swing 2.6s ease-in-out .9s infinite alternate; transform-origin: 50% 14%; }
+@keyframes intro-swing { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+.intro-mark { gap: 4px; margin: 6px 0 0; }
+.intro-mark::before { left: -14px; right: -14px; transform-origin: left; animation: intro-cord .5s ease-out both; }
+.intro-mark span {
+  width: 36px; height: 36px; border-radius: 10px; font-size: 22px;
+  animation: intro-drop .55s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(.25s + var(--i) * .09s);
+}
+.intro-mark span.dot { width: 17px; border-radius: 7px; }
+@keyframes intro-cord { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes intro-drop { from { opacity: 0; transform: translateY(-42px) rotate(-10deg); } to { opacity: 1; transform: none; } }
+.intro-sub { margin: 4px 0 6px; font: 600 16px var(--body); color: var(--muted); letter-spacing: .01em; }
+.intro-steps { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 8px; text-align: left; font: 500 15px var(--body); }
+.intro-steps li { display: flex; align-items: center; gap: 10px; }
+.intro-steps b {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 14px var(--display); color: #1c1830; background: linear-gradient(#ffffff, #e4dfec);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .14), 0 2px 4px var(--shadow);
+}
+.intro-go { height: 52px; min-width: 220px; justify-content: center; padding: 0 28px; font-size: 16px; }
+.intro-go:disabled { opacity: .6; cursor: progress; }
+.intro-go:disabled #introGoLabel::after { content: "..."; display: inline-block; width: 1.2em; text-align: left; animation: intro-dots 1.2s steps(4) infinite; overflow: hidden; vertical-align: bottom; }
+@keyframes intro-dots { from { width: 0; } to { width: 1.2em; } }
+.intro-sound { display: flex; align-items: center; gap: 6px; margin: 0; font: 500 13px var(--body); color: var(--muted); }
+@media (max-height: 640px) { .intro-logo { width: 80px; height: 80px; } .intro-card { gap: 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  .intro, .intro-logo, .intro-mark::before, .intro-mark span, .intro-go:disabled #introGoLabel::after { animation: none; transition: none; }
+}

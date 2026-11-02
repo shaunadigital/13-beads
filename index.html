@@ -3,10 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>13 Beads</title>
+  <title>13 Beads: a friendship bracelet maker</title>
   <meta name="description" content="String a friendship bracelet in your browser. Pick your beads, spell your phrase, and hang it on your wall.">
-  <meta property="og:title" content="13 Beads">
-  <meta property="og:description" content="String a friendship bracelet in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Shauna Digital">
+  <meta property="og:title" content="13 Beads: a friendship bracelet maker">
+  <meta property="og:description" content="String a friendship bracelet in 3D, tie it off, and trade it with a link. Free, in your browser.">
+  <meta property="og:url" content="https://shauna.digital/games/13-beads/">
+  <meta property="og:image" content="https://shauna.digital/games/13-beads/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="13 Beads: a beaded friendship bracelet spelling 13 BEADS on a felt bead mat">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://shauna.digital/games/13-beads/og.jpg">
   <meta name="theme-color" content="#130e21">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -14,13 +23,29 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="13 Beads">
   <script>try{var t=localStorage.getItem("13beads.theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}</script>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10.5' fill='none' stroke='%237f7398' stroke-width='1.8'/%3E%3Crect x='22.27' y='9.21' width='7.2' height='6.4' rx='2.4' fill='%23ff5fae' stroke='%233a2d55' stroke-width='.9' transform='rotate(70.0 25.87 12.41)'/%3E%3Crect x='22.46' y='15.81' width='7.2' height='6.4' rx='2.4' fill='%233fd3c6' stroke='%233a2d55' stroke-width='.9' transform='rotate(106.7 26.06 19.01)'/%3E%3Crect x='18.67' y='21.22' width='7.2' height='6.4' rx='2.4' fill='%23ffd23f' stroke='%233a2d55' stroke-width='.9' transform='rotate(143.3 22.27 24.42)'/%3E%3Crect x='12.40' y='23.30' width='7.2' height='6.4' rx='2.4' fill='%23a77bff' stroke='%233a2d55' stroke-width='.9' transform='rotate(180.0 16.00 26.50)'/%3E%3Crect x='6.13' y='21.22' width='7.2' height='6.4' rx='2.4' fill='%23ffffff' stroke='%233a2d55' stroke-width='.9' transform='rotate(216.7 9.73 24.42)'/%3E%3Crect x='2.34' y='15.81' width='7.2' height='6.4' rx='2.4' fill='%235aa9ff' stroke='%233a2d55' stroke-width='.9' transform='rotate(253.3 5.94 19.01)'/%3E%3Crect x='2.53' y='9.21' width='7.2' height='6.4' rx='2.4' fill='%23ff8a3d' stroke='%233a2d55' stroke-width='.9' transform='rotate(290.0 6.13 12.41)'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=Pacifico&display=swap">
 </head>
 <body>
-  <div class="app">
+  <!-- Start screen: shows the moment the page opens (plain HTML and CSS), covers the load, and the Start tap turns sound on. -->
+  <div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle" aria-describedby="introSub">
+    <div class="intro-card">
+      <svg class="intro-logo" viewBox="0 0 512 512" aria-hidden="true"><defs><radialGradient id="ib-white" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#f1edf6"/><stop offset="1" stop-color="#d9d2e4"/></radialGradient><linearGradient id="ib-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8cc6"/><stop offset="1" stop-color="#d3217c"/></linearGradient><radialGradient id="ib-pearl" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f6e9ee"/><stop offset="1" stop-color="#d8c6d4"/></radialGradient><filter id="ib-sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2d1450" flood-opacity=".28"/></filter></defs><g transform="translate(0 -8)"><circle cx="256" cy="232" r="148" fill="none" style="stroke:var(--string)" stroke-width="13"/><path d="M252 88 q-14 30 -30 44 M260 88 q14 30 30 44" fill="none" style="stroke:var(--string)" stroke-width="11" stroke-linecap="round"/><circle cx="256" cy="84" r="16" style="fill:var(--string)"/><g filter="url(#ib-sh)"><circle cx="120.8" cy="292.2" r="26" fill="url(#ib-pearl)"/><circle cx="391.2" cy="292.2" r="26" fill="url(#ib-pearl)"/><g transform="translate(153.2 338.5) rotate(44.0)"><rect x="-27" y="-34" width="54" height="68" rx="18" fill="url(#ib-pink)"/><rect x="-27" y="-34" width="54" height="68" rx="18" fill="none" stroke="#a3135c" stroke-opacity=".35" stroke-width="3"/><ellipse cx="-10" cy="-16" rx="8" ry="11" fill="#fff" opacity=".45"/></g><g transform="translate(358.8 338.5) rotate(-44.0)"><rect x="-27" y="-34" width="54" height="68" rx="18" fill="url(#ib-pink)"/><rect x="-27" y="-34" width="54" height="68" rx="18" fill="none" stroke="#a3135c" stroke-opacity=".35" stroke-width="3"/><ellipse cx="-10" cy="-16" rx="8" ry="11" fill="#fff" opacity=".45"/></g><circle cx="256.0" cy="380.0" r="80" fill="url(#ib-white)"/><circle cx="256.0" cy="380.0" r="80" fill="none" stroke="#bdb3cc" stroke-width="3"/><text x="256.0" y="411.0" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="92" letter-spacing="-2" fill="#1c1830">13</text></g></g></svg>
+      <div class="mark intro-mark" id="introTitle" role="heading" aria-level="1" aria-label="13 Beads"><span style="--i:0">1</span><span style="--i:1">3</span><span style="--i:2" class="dot"></span><span style="--i:3">B</span><span style="--i:4">E</span><span style="--i:5">A</span><span style="--i:6">D</span><span style="--i:7">S</span></div>
+      <p class="intro-sub" id="introSub">a friendship bracelet maker</p>
+      <ol class="intro-steps">
+        <li><b>1</b> Tap beads to string them</li>
+        <li><b>2</b> Tie it off</li>
+        <li><b>3</b> Hang it on your wall or trade it</li>
+      </ol>
+      <button class="finish intro-go" id="introGo" type="button" disabled><span id="introGoLabel">Loading beads</span></button>
+      <p class="intro-sound"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Every bead plays a note. Sound on.</p>
+    </div>
+  </div>
+  <div class="app" inert>
     <header>
       <a class="back-arrow" id="backArrow" href="https://shauna.digital/games/" aria-label="Back to all games" title="All games"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       <h1 class="mark" aria-label="13 Beads">
@@ -270,7 +295,7 @@
     </div>
 
   </div>
-  <footer class="credit">
+  <footer class="credit" inert>
     <a href="https://shauna.digital/games/">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       More games

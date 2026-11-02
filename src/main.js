@@ -14,6 +14,11 @@ import { arm, setMuted, land, tick, chime, buzz, note, twang, whoosh, thud } fro
 // so no bead ever draws smaller on a phone than a full string of letters. MAX_COUNT is a safety cap.
 const BUDGET = 25, MAX_COUNT = 120, TAU = Math.PI * 2, N = 90;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Recording mode: ?demo (or ?demo=YOUR WORD) strings a bracelet by itself, ties it off, and hangs it, for filming the
+// game. Nothing it does is saved.
+const demoParam = new URLSearchParams(location.search).get('demo');
+const demo = demoParam !== null;
+const demoWord = (demoParam || '').toUpperCase().replace(/[^A-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14) || 'FRIENDS';
 const $ = (id) => document.getElementById(id);
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -290,7 +295,7 @@ function say(m) {
 let trade = null;
 // Wide screens (900px and up) put the bead case, the share options, and the wall controls in a panel on the right.
 const wideCase = matchMedia('(min-width: 900px)');
-function save() { if (trade) return; try { localStorage.setItem('13beads.strand', JSON.stringify(defs())); } catch (e) { /* optional */ } }
+function save() { if (trade || demo) return; try { localStorage.setItem('13beads.strand', JSON.stringify(defs())); } catch (e) { /* optional */ } }
 // On two cords, the length that counts is the longer cord, so the bracelet still fits one wrist.
 const usedLen = () => layoutCords(defs()).U;
 const fits = (d, more = []) => beads.length + more.length < MAX_COUNT && layoutCords([...defs(), ...more, d]).U <= BUDGET + 1e-6;
@@ -686,7 +691,9 @@ function buildProps() {
     pin.position.set(-w / 2 + 12, h / 2 - 10, 2);
     head.userData.own = pin.userData.own = true;
     tk.add(head, pin);
-    tk.position.set(-W * 0.2, H / 2 - grid.bottom - 44, 4);
+    // Below the last row of bracelets; on an empty wall, just under the rail instead of floating mid-wall.
+    if (stack.length) tk.position.set(-W * 0.2, H / 2 - grid.bottom - 44, 4);
+    else tk.position.set(0, H / 2 - grid.top - h / 2 - 34, 4);
     tk.rotation.z = -0.1;
     g.add(tk);
     props.ticket = card;
@@ -695,7 +702,22 @@ function buildProps() {
 let stack = [];
 let rings = [], grabRing = null;
 try { const st = JSON.parse(localStorage.getItem('13beads.stack') || '[]'); if (Array.isArray(st)) stack = st.map(entryOf).filter(Boolean); } catch (e) { /* optional */ }
-function saveStack() { if (visit) return; try { localStorage.setItem('13beads.stack', JSON.stringify(stack)); } catch (e) { /* optional */ } }
+// A new wall starts with one sample bracelet on the first peg, so the wall shows what it is for. It is an ordinary
+// entry (tap it to edit or take it off) and is only ever added once per device.
+const SAMPLE_HALF = [['pony', 13], ['jelly', 20], ['smiley', 3], { k: 'pearl' }, ['glitter', 0], ['starb', 9], { k: 'ball' }]
+  .map((d) => (Array.isArray(d) ? { k: d[0], h: COLORS[d[1]].h, s: COLORS[d[1]].s, l: COLORS[d[1]].l } : d));
+// A word in round white letters between the sample beads, with a hot pink bead for each space.
+const braceletFor = (word) => [...SAMPLE_HALF,
+  ...[...word].map((ch) => (ch === ' ' ? { k: 'pony', h: 330, s: 90, l: 58 } : letterDef(ch, 'white', 'round'))), ...SAMPLE_HALF.slice().reverse()];
+const sampleBracelet = () => braceletFor('TRADE ME');
+try {
+  if (!stack.length && !localStorage.getItem('13beads.sampled')) {
+    stack.push({ b: sampleBracelet(), n: 'Sample', d: today() });
+    localStorage.setItem('13beads.stack', JSON.stringify(stack));
+  }
+  localStorage.setItem('13beads.sampled', '1');
+} catch (e) { /* optional */ }
+function saveStack() { if (visit || demo) return; try { localStorage.setItem('13beads.stack', JSON.stringify(stack)); } catch (e) { /* optional */ } }
 const tradedCount = () => stack.filter((e) => e.t === 'trade').length;
 function syncStack() {
   const n = stack.length, t = tradedCount();
@@ -1591,7 +1613,8 @@ function frame(now) {
   const lc = cumOf(line);
   lineLen = lc[N];
   // Zoomed out a little: beads are drawn smaller than the string has room for, so more cord and table show.
-  const ZOOM = 0.82, SMAX = clamp(W / 10, 28, 48) * ZOOM;
+  // Wide canvases (desktop) allow bigger beads, so the bracelet does not sit small in a large field of felt.
+  const ZOOM = 0.82, SMAX = clamp(W / 10, 28, W >= 700 ? 60 : 48) * ZOOM;
   // Keep the end beads fully on screen: measure how much string is lost past each edge.
   let edge = 0;
   for (let i = 0; i <= N; i++) { if (line[i].x >= sizeCur * 0.62 + 10) { edge = lc[i]; break; } }
@@ -2886,14 +2909,54 @@ async function start() {
   try { saved = JSON.parse(localStorage.getItem('13beads.strand') || 'null'); } catch (e) { /* optional */ }
   const got = readTrade(), visiting = readVisit();
   if (Array.isArray(saved) && saved.length) setBeads(saved);
-  else if (!got && !visiting) stringStarter(350);
   sync();
   rebuildStack();
   syncStack();
-  if (got) receiveTrade(got.list, got.note, Array.isArray(saved) ? saved : []);
-  else if (visiting) startVisit(visiting);
-  say(HINT);
+  // What happens once the game is on screen. New players, trade links, and wall links wait for the Start tap, so the
+  // first beads play with sound (browsers keep sound off until a tap). Returning players go straight in.
+  const go = () => {
+    if (demo) { runDemo(); return; }
+    if (got) receiveTrade(got.list, got.note, Array.isArray(saved) ? saved : []);
+    else if (visiting) startVisit(visiting);
+    else if (!beads.length) stringStarter(350);
+    say(HINT);
+  };
+  let seen = false;
+  try { seen = !!localStorage.getItem('13beads.seen'); } catch (e) { /* optional */ }
+  const fresh = !seen && !beads.length;
   requestAnimationFrame((t) => { last = t; frame(t); });
+  openIntro(demo ? 'Start the demo' : fresh || got || visiting ? (got ? 'Open your bracelet' : visiting ? 'Visit the wall' : 'Start stringing') : null, go);
+}
+function runDemo() {
+  stopStringing();
+  setMode('line');
+  beads.forEach(drop);
+  beads = [];
+  sync();
+  const list = braceletFor(demoWord), gap = 280, t0 = 700;
+  starterTimers = list.map((d, i) => setTimeout(() => { if (mode === 'line') addBead(d, true, 'R', i); }, t0 + i * gap));
+  const tie = t0 + list.length * gap + 1800;
+  // Kept out of starterTimers: tying off clears those.
+  setTimeout(() => { if (mode === 'line') $('tie').click(); }, tie);
+  setTimeout(() => { if (mode === 'tied') $('wear').click(); }, tie + 4500);
+}
+// The start screen in index.html. With a label, it waits for a tap on its button; without one, it fades out as soon
+// as the game has drawn.
+function openIntro(label, go) {
+  const box = $('intro'), btn = $('introGo');
+  const close = () => {
+    try { localStorage.setItem('13beads.seen', '1'); } catch (e) { /* optional */ }
+    document.querySelectorAll('.app, footer.credit').forEach((el) => { el.inert = false; });
+    box.classList.add('out');
+    box.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { box.hidden = true; }, reduce ? 0 : 480);
+  };
+  if (!label) { requestAnimationFrame(() => requestAnimationFrame(() => { close(); go(); })); return; }
+  $('introGoLabel').textContent = label;
+  btn.disabled = false;
+  // Focused for keyboards only, so a phone does not show a focus ring on first load.
+  if (matchMedia('(pointer: fine)').matches) btn.focus({ preventScroll: true, focusVisible: false });
+  btn.addEventListener('click', () => { arm(); tick(1.5, 0.08); close(); setTimeout(go, reduce ? 0 : 250); }, { once: true });
 }
 start();
 

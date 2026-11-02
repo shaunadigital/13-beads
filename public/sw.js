@@ -1,7 +1,7 @@
 // Offline support: the page and its files are kept after the first visit, so the game opens with no signal.
 // Pages are fetched fresh when possible (falling back to the kept copy); built files carry a hash in their name,
 // so the kept copy is always right. Fonts are kept once seen.
-const CACHE = '13beads-v2';
+const CACHE = '13beads-v3';
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./']).catch(() => {})).then(() => self.skipWaiting()));
 });
