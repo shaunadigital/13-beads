@@ -1405,38 +1405,68 @@ function savePhoto() {
   const sparkWas = sparks.visible;
   sparks.visible = false;
   renderer.render(scene, camera);
-  const k = cv.width / W, foot = Math.round(64 * k);
+  // A header band (the logo lockup and whose collection it is), the tray as it is on screen, and the address.
+  const k = cv.width / W, head = Math.round(118 * k), foot = Math.round(52 * k), pad = Math.round(14 * k);
+  // A short tray is cropped just below its last row, so the picture is not mostly empty felt.
+  const ch = TRAY && !look && scrollY < 1 ? Math.min(cv.height, Math.ceil((wallGrid().total + 14) * k)) : cv.height;
   const c = document.createElement('canvas');
-  c.width = cv.width; c.height = cv.height + foot;
+  c.width = cv.width + pad * 2; c.height = head + ch + foot;
   const x = c.getContext('2d');
-  const g = x.createRadialGradient(c.width / 2, 0, 0, c.width / 2, 0, c.height * 1.1);
+  const g = x.createLinearGradient(0, 0, 0, c.height);
   g.addColorStop(0, css.getPropertyValue('--stage-a').trim() || '#fff6fb');
   g.addColorStop(1, css.getPropertyValue('--stage-b').trim() || '#e2d6f1');
   x.fillStyle = g;
   x.fillRect(0, 0, c.width, c.height);
-  x.drawImage(cv, 0, 0);
-  // Wordmark as a row of letter beads on a string.
-  const chars = ['1', '3', '', 'B', 'E', 'A', 'D', 'S'], t = 26 * k, gap = 4 * k;
-  const total = chars.reduce((w, ch) => w + (ch ? t : t * 0.5) + gap, -gap);
-  let px = (c.width - total) / 2;
-  const py = cv.height + (foot - t) / 2 - 6 * k;
-  x.fillStyle = css.getPropertyValue('--string').trim() || '#7f7398';
-  x.fillRect(px - 10 * k, py + t / 2 - k, total + 20 * k, 2 * k);
+  const ink = css.getPropertyValue('--ink').trim() || '#231a36', muted = css.getPropertyValue('--muted').trim() || '#6a5f80';
+  drawLockup(x, c.width / 2, head * 0.36, Math.min(22 * k, c.width / 14), css.getPropertyValue('--string').trim() || '#7f7398');
   x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.font = `700 ${16 * k}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
-  for (const ch of chars) {
-    const w = ch ? t : t * 0.5;
-    x.fillStyle = ch ? '#ffffff' : '#d3217c';
-    x.beginPath(); x.roundRect(px, py, w, t, 7 * k); x.fill();
-    if (ch) { x.fillStyle = '#1c1830'; x.fillText(ch, px + w / 2, py + t / 2 + k); }
-    px += w + gap;
+  x.fillStyle = ink;
+  x.font = `700 ${17 * k}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
+  const n = stack.length;
+  x.fillText((decor.name ? decor.name + "'s collection" : 'My collection') + '  ·  ' + n + (n === 1 ? ' bracelet' : ' bracelets'), c.width / 2, head * 0.78);
+  // The tray, with rounded corners and a soft shadow.
+  x.save();
+  x.shadowColor = 'rgba(30,15,40,.25)'; x.shadowBlur = 16 * k; x.shadowOffsetY = 5 * k;
+  x.beginPath(); x.roundRect(pad, head, cv.width, ch, 18 * k); x.fillStyle = '#3a2418'; x.fill();
+  x.restore();
+  x.save();
+  x.beginPath(); x.roundRect(pad, head, cv.width, ch, 18 * k); x.clip();
+  x.drawImage(cv, 0, 0, cv.width, ch, pad, head, cv.width, ch);
+  x.restore();
+  // The captions under the bracelets are page text, not part of the 3D picture, so they are drawn in here.
+  if (TRAY && !look) {
+    for (const r of rings) {
+      const cx = pad + r.sx * k, top = head + (r.sy + r.ry + 4) * k;
+      if (top < head || top > head + ch - 20 * k) continue;
+      x.fillStyle = ink;
+      x.font = `600 ${13 * k}px Figtree, system-ui, sans-serif`;
+      x.textBaseline = 'top';
+      x.fillText(r.entry.n || 'Mine', cx, top, 140 * k);
+      // The date, with a pink TRADED in front for a traded bracelet, as on screen.
+      const date = shortDate(r.entry.d), traded = r.entry.t === 'trade';
+      x.font = `500 ${11.5 * k}px Figtree, system-ui, sans-serif`;
+      const dw = x.measureText(date).width;
+      x.font = `700 ${9.5 * k}px Figtree, system-ui, sans-serif`;
+      const tw = traded ? x.measureText('TRADED').width + 5 * k : 0;
+      let lx = cx - (tw + dw) / 2;
+      x.textAlign = 'left';
+      if (traded) { x.fillStyle = css.getPropertyValue('--accent').trim() || '#d3217c'; x.fillText('TRADED', lx, top + 18.5 * k); lx += tw; }
+      x.fillStyle = muted;
+      x.font = `500 ${11.5 * k}px Figtree, system-ui, sans-serif`;
+      x.fillText(date, lx, top + 17 * k);
+      x.textAlign = 'center';
+    }
+    x.textBaseline = 'middle';
   }
+  x.fillStyle = muted;
+  x.font = `600 ${12 * k}px Figtree, system-ui, sans-serif`;
+  x.fillText('Make one free at shauna.digital/games/13-beads', c.width / 2, head + ch + foot / 2 + 2 * k);
   renderer.setPixelRatio(pr);
   renderer.setSize(W, H, false);
   sparks.visible = sparkWas;
   c.toBlob(async (blob) => {
     if (!blob) { say('The photo could not be made in this browser.'); return; }
-    const file = new File([blob], '13-beads-bracelet.png', { type: 'image/png' });
+    const file = new File([blob], '13-beads-collection.png', { type: 'image/png' });
     // Phones get the share sheet, so the photo can go straight to messages or the camera roll.
     if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: '13 Beads' }); return; } catch (e) { if (e.name === 'AbortError') return; }
@@ -1448,7 +1478,7 @@ function savePhoto() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    say('Photo saved as 13-beads-bracelet.png.');
+    say('Photo saved as 13-beads-collection.png.');
   }, 'image/png');
 }
 
@@ -1552,6 +1582,48 @@ function drawMark(x, cx, cy, t, stringColor) {
     px += w + gap;
   }
 }
+// The logo mark, drawn to a 2D canvas (same shapes as the start screen's SVG, in its 512 unit box): a cord loop
+// knotted at the top, a big round "13" letter bead at the bottom, a hot pink pony bead each side, and pearls.
+function drawLogo(x, cx, cy, size, cord) {
+  const s = size / 512, P = (deg, r = 148) => [256 + r * Math.cos((deg * Math.PI) / 180), 232 + r * Math.sin((deg * Math.PI) / 180)];
+  x.save();
+  x.translate(cx - 256 * s, cy - 248 * s);
+  x.scale(s, s);
+  x.strokeStyle = cord; x.fillStyle = cord; x.lineCap = 'round';
+  x.lineWidth = 13; x.beginPath(); x.arc(256, 232, 148, 0, TAU); x.stroke();
+  x.lineWidth = 11; x.beginPath(); x.moveTo(252, 88); x.quadraticCurveTo(238, 118, 222, 132); x.moveTo(260, 88); x.quadraticCurveTo(274, 118, 290, 132); x.stroke();
+  x.beginPath(); x.arc(256, 84, 16, 0, TAU); x.fill();
+  x.shadowColor = 'rgba(45,20,80,.28)'; x.shadowBlur = 14; x.shadowOffsetY = 6;
+  for (const deg of [156, 24]) {
+    const [px, py] = P(deg), g = x.createRadialGradient(px - 8, py - 10, 2, px, py, 28);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.6, '#f6e9ee'); g.addColorStop(1, '#d8c6d4');
+    x.fillStyle = g; x.beginPath(); x.arc(px, py, 26, 0, TAU); x.fill();
+  }
+  for (const deg of [134, 46]) {
+    const [px, py] = P(deg);
+    x.save(); x.translate(px, py); x.rotate(((deg - 90) * Math.PI) / 180);
+    const g = x.createLinearGradient(0, -34, 0, 34);
+    g.addColorStop(0, '#ff8cc6'); g.addColorStop(1, '#d3217c');
+    x.fillStyle = g; x.beginPath(); x.roundRect(-27, -34, 54, 68, 18); x.fill();
+    x.shadowColor = 'transparent'; x.fillStyle = 'rgba(255,255,255,.45)'; x.beginPath(); x.ellipse(-10, -16, 8, 11, 0, 0, TAU); x.fill();
+    x.restore();
+  }
+  const [bx, by] = P(90), g = x.createRadialGradient(bx - 18, by - 24, 4, bx, by, 82);
+  g.addColorStop(0, '#ffffff'); g.addColorStop(0.7, '#f1edf6'); g.addColorStop(1, '#d9d2e4');
+  x.fillStyle = g; x.beginPath(); x.arc(bx, by, 80, 0, TAU); x.fill();
+  x.shadowColor = 'transparent';
+  x.strokeStyle = '#bdb3cc'; x.lineWidth = 3; x.stroke();
+  x.fillStyle = '#1c1830'; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  x.font = '700 92px Fredoka, "Arial Rounded MT Bold", sans-serif';
+  x.fillText('13', bx, by + 31);
+  x.restore();
+}
+// The logo mark beside the letter-bead wordmark, centered on cx, as on the link preview.
+function drawLockup(x, cx, cy, t, cord) {
+  const markW = t * 8.55, logo = t * 2.1, gap = t * 0.9, total = logo + gap + markW;
+  drawLogo(x, cx - total / 2 + logo / 2, cy, logo, cord);
+  drawMark(x, cx - total / 2 + logo + gap + markW / 2, cy, t, cord);
+}
 function shareCard(note) {
   deliverPng(cardCanvas(note), '13-beads-card.png', 'Card saved as 13-beads-card.png.');
 }
@@ -1575,9 +1647,13 @@ function cardCanvas(note) {
   g.addColorStop(1, v('--stage-b', '#e2d6f1'));
   x.fillStyle = g;
   x.fillRect(0, 0, CW, CH);
-  drawMark(x, CW / 2, 150, 62, v('--string', '#7f7398'));
+  drawLockup(x, CW / 2, 128, 58, v('--string', '#7f7398'));
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = '600 34px Figtree, system-ui, sans-serif';
+  x.fillStyle = muted;
+  x.fillText('a friendship bracelet maker', CW / 2, 232);
   // The bracelet, in a rounded frame.
-  const P = 940, px = (CW - P) / 2, py = 270;
+  const P = 940, px = (CW - P) / 2, py = 300;
   x.save();
   x.shadowColor = 'rgba(30,15,40,.28)'; x.shadowBlur = 40; x.shadowOffsetY = 14;
   x.beginPath(); x.roundRect(px, py, P, P, 56); x.fillStyle = '#3a2418'; x.fill();
@@ -1592,16 +1668,18 @@ function cardCanvas(note) {
   // The phrase, the date, and the gift tag.
   // Letters in a row form a word; any other bead between them becomes a space.
   const word = defs().map((d) => (d.k === 'letter' ? d.ch : ' ')).join('').replace(/\s+/g, ' ').trim();
-  let y = py + P + 150;
+  let y = py + P + 130;
   x.textAlign = 'center'; x.textBaseline = 'middle';
   if (word) {
-    let size = 120;
-    x.font = `${size}px Pacifico, "Brush Script MT", cursive`;
-    const w = x.measureText(word).width;
-    if (w > CW - 140) { size = Math.floor((size * (CW - 140)) / w); x.font = `${size}px Pacifico, "Brush Script MT", cursive`; }
+    // The phrase in the display face, spaced like the close-up view's title.
+    let size = 96;
+    const fit = () => { x.font = `700 ${size}px Fredoka, "Arial Rounded MT Bold", sans-serif`; x.letterSpacing = Math.round(size * 0.08) + 'px'; return x.measureText(word).width; };
+    let w = fit();
+    if (w > CW - 140) { size = Math.floor((size * (CW - 140)) / w); w = fit(); }
     x.fillStyle = ink;
     x.fillText(word, CW / 2, y);
-    y += size * 0.55 + 50;
+    x.letterSpacing = '0px';
+    y += size * 0.5 + 56;
   } else y -= 40;
   x.font = `500 40px Figtree, system-ui, sans-serif`;
   x.fillStyle = muted;
@@ -1629,9 +1707,9 @@ function cardCanvas(note) {
     x.fillText(note, 25, 3, tw - 120);
     x.restore();
   }
-  x.font = `500 32px Figtree, system-ui, sans-serif`;
+  x.font = `600 32px Figtree, system-ui, sans-serif`;
   x.fillStyle = muted;
-  x.fillText('shauna.digital/games/13-beads', CW / 2, CH - 70);
+  x.fillText('Make one free at shauna.digital/games/13-beads', CW / 2, CH - 70);
   return c;
 }
 

@@ -326,5 +326,20 @@
   </footer>
   <script type="module" src="/src/main.js"></script>
   <script src="https://shauna.digital/games/feedback.js" defer></script>
+  <!-- Vercel Web Analytics (no cookies). The game is served at a domain root and under /games/13-beads on another
+       site, so the script and the endpoint it reports to are both found relative to this page, not the domain root.
+       Off in recording mode. -->
+  <script>
+    (function () {
+      if (/[?&]demo\b/.test(location.search) || location.protocol !== 'https:') return;
+      var base = location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+      var s = document.createElement('script');
+      s.defer = true;
+      s.src = base + '/_vercel/insights/script.js';
+      s.setAttribute('data-endpoint', base + '/_vercel/insights');
+      document.head.appendChild(s);
+    })();
+  </script>
 </body>
 </html>
