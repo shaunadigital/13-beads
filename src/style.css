@@ -591,7 +591,7 @@ header { gap: 8px; min-height: 44px; }
     background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; animation: none;
   }
   #wallShareBtn, #wallShareClose { display: none; }
-  #wallShareTitle::before { content: "Share your wall"; }
+  #wallShareTitle::before { content: "Share your collection"; }
   #wallShareTitle { font-size: 0; }
   #wallShareTitle::before { font-size: 12px; }
   .hung { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--track); }
@@ -645,3 +645,52 @@ header { gap: 8px; min-height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .intro, .intro-logo, .intro-mark::before, .intro-mark span, .intro-go:disabled #introGoLabel::after { animation: none; transition: none; }
 }
+
+/* The collection: a jewelry tray. Each bracelet has a quiet caption under it (its tag and date), and the tray's
+   edge has a soft inner shadow so the felt reads as sunk into a frame. */
+.stage:has(#hud[data-mode="stack"])::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+  box-shadow: inset 0 0 0 1px rgba(60, 40, 30, .08), inset 0 3px 14px rgba(40, 25, 20, .2), inset 0 -1px 0 rgba(255, 255, 255, .4);
+}
+:root[data-theme="dark"] .stage:has(#hud[data-mode="stack"])::after { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), inset 0 3px 16px rgba(0, 0, 0, .55); }
+.ring-btn { overflow: visible; }
+.ring-cap {
+  position: absolute; left: 50%; top: calc(100% + 4px); transform: translateX(-50%); width: max-content; max-width: 150px;
+  display: flex; flex-direction: column; align-items: center; gap: 1px; pointer-events: none; text-align: center;
+}
+.ring-cap b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px var(--body); color: var(--ink); }
+.ring-cap small { display: flex; align-items: center; gap: 5px; font: 500 11.5px var(--body); color: var(--muted); }
+.ring-cap i { font: 700 9.5px var(--body); font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.looking .ring-btns { visibility: hidden; }
+/* The close-up view. */
+.hud > .look { inset: 0; pointer-events: none; z-index: 2; }
+.hud > .look[hidden] { display: none; }
+.look > * { pointer-events: auto; position: absolute; }
+.look-btn {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; padding: 0; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.look-btn:hover { background: var(--surface); }
+.look-btn[hidden] { display: none; }
+.look-close { top: 10px; right: 10px; }
+.look-count { top: 10px; left: 50%; transform: translateX(-50%); margin: 0; height: 44px; display: grid; place-items: center; font: 600 13px var(--body); color: var(--muted); letter-spacing: .02em; pointer-events: none; }
+.look-nav { top: 44%; transform: translateY(-50%); }
+.look-prev { left: 10px; }
+.look-next { right: 10px; }
+.look-cap { left: 16px; right: 16px; bottom: 18px; text-align: center; pointer-events: none; }
+.look-title { margin: 0; font: 700 21px/1.15 var(--display); letter-spacing: .06em; color: var(--ink); overflow-wrap: anywhere; }
+.look-meta { margin: 4px 0 0; font: 500 13.5px var(--body); color: var(--muted); }
+.look-bar[hidden] { display: none; }
+.look-bar { gap: 6px; }
+.look-bar .finish { margin-left: auto; }
+.looking .wall-bar, .looking #wallLine { display: none; }
+.app:has(#pop:not([hidden])) .look-bar { visibility: hidden; }
+@media (min-width: 900px) {
+  .app:has(#pop:not([hidden])) .look-bar { visibility: visible; }
+  .look-bar { flex-wrap: wrap; height: auto; }
+  .look-bar .finish { flex: 1 0 100%; justify-content: center; margin: 0; order: -1; }
+  .look-bar .ghost-btn { flex: 1; justify-content: center; }
+  .look-title { font-size: 26px; }
+}
+@media (max-width: 380px) { .wall-bar .ghost-btn, .look-bar .ghost-btn { padding-inline: 12px; } .wall-bar .ghost-btn svg { display: none; } }

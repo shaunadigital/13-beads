@@ -25,12 +25,15 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const HINT = 'Tap a bead below to add it. On the string: tap to remove, drag to reorder, or pluck it.';
 const TIED_HINT = 'Drag to spin it. Tap for sparkles.';
+// The collection is shown as a jewelry tray (2026-11-02). TRAY false brings back the peg wall, which is kept in code.
+const TRAY = true;
 // Wall decoration: a few curated colors, and the word on the neon sign.
 const WALL_COLORS = {
   // shade: the deeper tone toward the bottom of the wall. night: how the wall reads under lamp and neon light.
-  white: { base: '#f4f0e8', shade: '#ddd3c4', night: 0x8a8ea8 },
-  pink: { base: '#f7d3e4', shade: '#e9b3cc', night: 0x9a7fb4 },
-  sage: { base: '#cfdecb', shade: '#b4c8b1', night: 0x7d9a94 },
+  // tray: the felt lining of the jewelry tray (the saved names stay white, pink, sage; players see Oat, Blush, Sage).
+  white: { base: '#f4f0e8', shade: '#ddd3c4', night: 0x8a8ea8, tray: 0xf4ece0, trayNight: 0x6d6880 },
+  pink: { base: '#f7d3e4', shade: '#e9b3cc', night: 0x9a7fb4, tray: 0xf6dbe4, trayNight: 0x7a5f78 },
+  sage: { base: '#cfdecb', shade: '#b4c8b1', night: 0x7d9a94, tray: 0xdbe7d6, trayNight: 0x5c7069 },
 };
 const SIGN_DEFAULT = '13 beads', SIGN_MAX = 16, NAME_MAX = 16;
 const cleanSign = (t) => String(t || '').replace(/[^A-Za-z0-9 !?&']/g, '').replace(/\s+/g, ' ').slice(0, SIGN_MAX);
@@ -59,9 +62,9 @@ try {
 // What a new tag says: the player's name once they have given one.
 const tagDefault = () => decor.name || 'Mine';
 const STACK_HINT = matchMedia('(pointer: coarse)').matches
-  ? 'Tap a bracelet for its options and its tag. Hold it, then drag it to another peg.'
-  : 'Click a bracelet for its options and its tag. Hold it, then drag it to another peg.';
-const EMPTY_WALL = 'Nothing on display yet. Finish a bracelet and hang it here.';
+  ? 'Tap a bracelet to see it up close. Hold it, then drag it to another spot.'
+  : 'Click a bracelet to see it up close. Hold it, then drag it to another spot.';
+const EMPTY_WALL = 'Your tray is empty. Finish a bracelet and add it here.';
 
 /* ---------- State ---------- */
 let beads = [], fallers = [], undoStack = [], redoStack = [];
@@ -377,6 +380,7 @@ function setMode(m) {
   $('backArrow').title = m === 'line' ? 'All games' : 'Back to your string';
 
   $('count').hidden = m !== 'line';
+  closeLook(false);
   closePop(false);
   closeCustom(false);
   closeShare(false);
@@ -422,11 +426,18 @@ function paintTexture(name) {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
-const wall = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: paintTexture(decor.color), roughness: 0.95 }));
-// No shadows on the wall: the bracelets hang well in front of it, so their shadows landed far below them as gray ghosts.
-wall.receiveShadow = false;
-wall.position.z = -70;
-board.add(wall);
+// The collection is a jewelry tray seen from above: a felt lining (the same CC0 felt as the bead mat, tinted), with
+// the bracelets lying flat on it, so the whole phrase reads around each one. Its soft shadows sit right under them.
+const trayTex = new THREE.TextureLoader().load(feltUrl, () => { wall.material.needsUpdate = true; });
+trayTex.colorSpace = THREE.SRGBColorSpace;
+trayTex.wrapS = trayTex.wrapT = THREE.RepeatWrapping;
+trayTex.anisotropy = 4;
+const trayNormal = new THREE.TextureLoader().load(feltNormalUrl);
+trayNormal.wrapS = trayNormal.wrapT = THREE.RepeatWrapping;
+const wall = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: trayTex, normalMap: trayNormal, roughness: 0.96 }));
+wall.material.normalScale.set(0.7, 0.7);
+wall.receiveShadow = true;
+wall.position.z = -14;
 
 // A neon-style sign in script. It glows at night and sits unlit by day.
 // How much of the sign's width the word takes up, so a tap on the sign can tell the word from the bare wall.
@@ -491,7 +502,8 @@ board.add(neonGlow, lamp);
 // Day in light mode, evening in dark mode. Leaving the wall restores the stage lighting.
 function placeSun() {
   const M = Math.max(W, H);
-  if (mode === 'stack') sun.position.set(-0.95 * M, 0.75 * M, 0.85 * M);
+  // Over the tray the light is high and a little to the left, so each bracelet's shadow stays tight under it.
+  if (mode === 'stack') sun.position.set(TRAY ? -0.3 * M : -0.95 * M, TRAY ? 0.4 * M : 0.75 * M, TRAY ? 1.25 * M : 0.85 * M);
   else sun.position.set(-0.3 * M, 0.55 * M, 1.1 * M);
 }
 function applyMood() {
@@ -501,7 +513,13 @@ function applyMood() {
   sun.intensity = !onWall ? 1.7 : night ? 0.6 : 2.1;
   scene.environmentIntensity = !onWall ? 0.55 : night ? 0.32 : 0.5;
   stageA.intensity = stageB.intensity = onWall ? 0.12 : reduce ? 0.5 : 1.0;
-  wall.material.color.set(night ? (WALL_COLORS[decor.color] || WALL_COLORS.white).night : 0xffffff);
+  {
+    const wc = WALL_COLORS[decor.color] || WALL_COLORS.white;
+    // A flat glow in the lining's color carries most of its tone; the lit felt adds the texture on top.
+    wall.material.color.set(night ? wc.trayNight : wc.tray).multiplyScalar(night ? 0.42 : 0.4);
+    wall.material.emissive.set(night ? wc.trayNight : wc.tray);
+    wall.material.emissiveIntensity = night ? 0.2 : 0.62;
+  }
   railMat.color.set(RAIL_COLORS[decor.color] || RAIL_COLORS.white);
   // The craft table: evenly lit by day; in dark mode the room dims and a warm desk lamp pools light in the middle.
   const deskNight = !onWall && isDark();
@@ -512,16 +530,12 @@ function applyMood() {
   }
   deskLamp.intensity = deskNight ? 7 : 0;
   if (deskNight) { sun.intensity = 0.55; sun.color.set(0xffe2c4); scene.environmentIntensity = 0.35; stageA.intensity = stageB.intensity = 0.35; }
-  lamp.intensity = night ? 1.6 : 0;
-  // At night the sign is the room's main light: its color washes down the wall and catches the pegs and beads.
-  neonGlow.intensity = night ? 3.4 : 0;
-  bulbMat.emissiveIntensity = night ? 2.2 : 0.15;
-  for (const l of props.lamps) l.intensity = night ? 1.4 : 0;
-  neonGlow.color.set(decor.neon === 'blue' ? 0x7fc8ff : decor.neon === 'white' ? 0xfff0dc : decor.neon === 'pink' ? 0xff8cc4 : 0xffb0d8);
-  if (!neonMaps.on) { neonMaps.on = neonTexture(true); neonMaps.off = neonTexture(false); }
-  neon.material.map = night ? neonMaps.on : neonMaps.off;
-  neon.material.blending = THREE.NormalBlending;
-  neon.material.needsUpdate = true;
+  // At night the tray sits under one warm lamp. (The neon sign and fairy lights were removed on 2026-11-02; their
+  // code stays for now, switched off.)
+  lamp.intensity = night ? 2.4 : 0;
+  veil.material.color.set(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f1ebf7');
+  neonGlow.intensity = 0;
+  neon.visible = false;
 }
 onTheme(applyMood);
 
@@ -532,9 +546,16 @@ onTheme(applyMood);
 // Everything on the wall (the sign and the rails) scrolls as one room when there are more rows than fit.
 const room = new THREE.Group();
 board.add(room);
+room.add(wall);
 room.add(neon);
 const display = new THREE.Group();
 room.add(display);
+// The close-up view's veil: a sheet in the room's background color between the tray and the picked bracelet.
+const veil = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+veil.position.z = 30;
+veil.visible = false;
+board.add(veil);
+let look = null, veilK = 0;
 const goldMat = new THREE.MeshPhysicalMaterial({ color: 0xe9c070, metalness: 0.9, roughness: 0.26, clearcoat: 0.6 });
 const RAIL_COLORS = { white: 0xe9d6cc, pink: 0xe2b6c9, sage: 0xeee6d6 };
 const railMat = new THREE.MeshPhysicalMaterial({ color: RAIL_COLORS.white, roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2 });
@@ -551,7 +572,21 @@ const fmtDate = (iso) => {
 const TAG_MAX = 24;
 const cleanTag = (t) => String(t || '').replace(/\s+/g, ' ').trim().slice(0, TAG_MAX);
 // Where the pegs go on this stage, in stage pixels (y measured down from the top).
+// The tray: bracelets lie in a grid of circles, each with a caption (its tag and date) under it.
+const CAPTION = 46;
 function wallGrid() {
+  if (TRAY) {
+    const n = stack.length;
+    const cols = W < 520 ? 2 : W < 1000 ? 3 : 4;
+    const colW = Math.min((W * 0.96) / cols, 300);
+    const R = clamp(colW * 0.35, 40, 104);
+    const S = clamp(R * 0.36, 13, 30);
+    const rowH = R * 2 + S + CAPTION + 18;
+    const rows = Math.max(1, Math.ceil(n / cols));
+    const top = 26 + S / 2;
+    const bottom = top + (rows - 1) * rowH + R * 2 + S + CAPTION;
+    return { cols, colW, R, S, rowH, rows, top, bottom, total: bottom + 16, railW: 0 };
+  }
   const n = stack.length;
   const cols = W < 520 ? 2 : W < 760 ? 3 : 4;
   const colW = Math.min((W * 0.94) / cols, 300);
@@ -567,13 +602,15 @@ function wallGrid() {
 // A peg's place, in room coordinates (y up, origin at the stage center before scrolling).
 function slotPos(i, grid) {
   const col = i % grid.cols, row = Math.floor(i / grid.cols);
-  return { x: (col - (grid.cols - 1) / 2) * grid.colW, y: H / 2 - grid.top - row * grid.rowH };
+  // On the tray a slot is the bracelet's center; on the old wall it was the peg.
+  return { x: (col - (grid.cols - 1) / 2) * grid.colW, y: H / 2 - grid.top - row * grid.rowH - (TRAY ? grid.R : 0) };
 }
 let standKey = '';
 const railMeshes = [];
 function buildStand(grid) {
   for (const m of railMeshes) { display.remove(m); m.traverse((o) => { if (o.userData.own) o.geometry.dispose(); }); }
   railMeshes.length = 0;
+  if (TRAY) return;
   const railGeo = new RoundedBoxGeometry(grid.railW, 14, 10, 3, 4);
   for (let row = 0; row < grid.rows; row++) {
     const y = slotPos(row * grid.cols, grid).y;
@@ -648,6 +685,7 @@ function buildProps() {
   const g = new THREE.Group();
   props.group = g;
   display.add(g);
+  if (TRAY) return;
   if (decor.lights) {
     // The wire: pinned at both top corners and the middle, sagging a little between.
     const top = H / 2 - 9, sag = Math.min(20, W * 0.05), pts = [];
@@ -724,9 +762,10 @@ function syncStack() {
   $('wallCount').textContent = n;
   $('wallCount').hidden = !n || mode === 'stack';
   const line = n + (n === 1 ? ' bracelet' : ' bracelets');
-  $('wallLine').textContent = visit ? 'Visiting a wall · ' + line + '. Tap one to take a copy.' : n ? line + ' on your wall' + (t ? ' · ' + t + ' traded' : '') : 'Nothing on display yet';
-  $('hungTitle').textContent = visit ? 'Their wall · ' + n : n ? 'On your wall · ' + n + (t ? ' · ' + t + ' traded' : '') : 'On your wall';
-  $('stackBtn').setAttribute('aria-label', n ? 'Your wall, ' + n + ' on display' : 'Your wall');
+  const own = decor.name ? decor.name + "'s collection" : 'Your collection';
+  $('wallLine').textContent = visit ? (decor.name ? decor.name + "'s collection" : 'A friend\'s collection') + ' · ' + line + '. Tap one to take a copy.' : n ? own + ' · ' + line + (t ? ' · ' + t + ' traded' : '') : 'Your tray is empty';
+  $('hungTitle').textContent = visit ? 'Their collection · ' + n : n ? own + ' · ' + n + (t ? ' · ' + t + ' traded' : '') : own;
+  $('stackBtn').setAttribute('aria-label', n ? 'Your collection, ' + n + ' bracelets' : 'Your collection');
   $('photoBtn').disabled = !n;
 }
 // The wall's main button says where it goes: back to a string in progress, or a fresh one.
@@ -756,8 +795,8 @@ function buildHungList() {
     label.appendChild(tag);
     edit.type = 'button'; edit.className = 'tint-btn'; edit.textContent = 'Edit';
     edit.setAttribute('aria-label', 'Edit ' + name);
-    off.type = 'button'; off.className = 'quiet-danger small'; off.textContent = 'Take off';
-    off.setAttribute('aria-label', 'Take ' + name + ' off the wall');
+    off.type = 'button'; off.className = 'quiet-danger small'; off.textContent = 'Remove';
+    off.setAttribute('aria-label', 'Take ' + name + ' out of your collection');
     edit.addEventListener('click', () => { popRing = rings[i]; popOpener = null; $('editRing').click(); });
     off.addEventListener('click', () => { popRing = rings[i]; popOpener = $('another'); $('takeOff').click(); });
     li.append(label, edit, off);
@@ -768,7 +807,7 @@ function buildHungList() {
 // bottom. Traced from the peg down the left side, along the bottom left to right, and back up, so beads along
 // the bottom read in order.
 function loopPath(R, M = 120) {
-  const k = 0.38, c = R * 1.15, pts = [];
+  const k = TRAY ? 0 : 0.38, c = TRAY ? R : R * 1.15, pts = [];
   let mx = 0;
   for (let i = 0; i <= M; i++) {
     const t = (i / M) * TAU, x = -Math.sin(t) * (1 - k * Math.cos(t));
@@ -887,11 +926,17 @@ function buildRing(entry, grid) {
   kn.rotation.z = Math.PI;
   kn.position.set(0, 1, 3);
   loop.add(kn);
-  const tag = makeTag(entry, R);
-  g.add(loop, tag.g, tag.thread);
-  // Shadows from the loop land on the rail and the wall below it.
+  // Shadows from the loop land on the felt under it.
   loop.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-  return { g, loop, tag, R, S, hangs, entry, a: 0, av: 0, fly: 0, lift: 0, x: 0, y: 0, tx: 0, ty: 0, slot: 0, sx: 0, sy: 0, rx: R, ry: R, drag: null };
+  // On the tray the group's origin is the bracelet's center, so it turns in place; a pivot inside it tips the
+  // bracelet toward the viewer in the close-up view. The tag is an HTML caption under it (see buildRingButtons).
+  const pivot = new THREE.Group();
+  loop.position.y = R;
+  pivot.add(loop);
+  g.add(pivot);
+  const r = { g, loop, pivot, R, S, hangs, entry, a: 0, av: 0, fly: 0, lift: 0, look: 0, x: 0, y: 0, tx: 0, ty: 0, slot: 0, sx: 0, sy: 0, rx: R, ry: R, drag: null };
+  r.tag = { redraw: () => captionOf(r) };
+  return r;
 }
 // Newest bracelet on the first peg, the rest along the rails in order. Bracelets already hanging keep their
 // place on screen and glide to a new peg when one is added, taken off, or moved.
@@ -914,6 +959,10 @@ function rebuildStack() {
   });
   buildRingButtons();
   buildHungList();
+  if (look) {
+    const r = rings.find((o) => o.entry === look.entry);
+    if (r) { look.r = r; r.look = 1; syncLook(); } else closeLook(false);
+  }
 }
 const tmpV = new THREE.Vector3();
 function toScreen(obj, x, y) {
@@ -940,7 +989,15 @@ function buildRingButtons() {
     b.setAttribute('aria-label', braceletName(r.entry) + ', ' + (i + 1) + ' of ' + rings.length + '. Press Enter for its options.');
     b.addEventListener('focus', () => { kbRing = r; scrollToRing(r); });
     b.addEventListener('blur', () => { if (kbRing === r) kbRing = null; });
-    b.addEventListener('click', () => { if (rings.includes(r)) openPop(r, b); });
+    b.addEventListener('click', () => { if (rings.includes(r)) (TRAY ? openLook(r) : openPop(r, b)); });
+    if (TRAY) {
+      const cap = document.createElement('span');
+      cap.className = 'ring-cap';
+      cap.setAttribute('aria-hidden', 'true');
+      b.appendChild(cap);
+      r.cap = cap;
+      captionOf(r);
+    }
     b.addEventListener('keydown', (e) => {
       if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); openPop(r, b); }
       // Arrow keys move between bracelets.
@@ -954,6 +1011,23 @@ function buildRingButtons() {
     const n = box.children[Math.min(hadFocus, box.children.length - 1)];
     if (n) n.focus(); else $('another').focus();
   }
+}
+// The caption under a bracelet on the tray: its tag and the day it was added, and a Traded mark.
+const shortDate = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  return m ? new Date(+m[1], m[2] - 1, +m[3]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+};
+function captionOf(r) {
+  if (r.cap) {
+    const e = r.entry;
+    r.cap.textContent = '';
+    const name = document.createElement('b'), meta = document.createElement('small');
+    name.textContent = e.n || 'Mine';
+    meta.textContent = shortDate(e.d);
+    if (e.t === 'trade') { const t = document.createElement('i'); t.textContent = 'Traded'; meta.prepend(t); }
+    r.cap.append(name, meta);
+  }
+  if (look && look.r === r) syncLook();
 }
 // Hanging a finished bracelet: it goes on the first peg and everything else shifts along a peg.
 function wear() {
@@ -984,28 +1058,43 @@ function wear() {
 let scrollY = 0, scrollV = 0, scrollTo = null;
 const scrollMax = () => Math.max(0, wallGrid().total - H);
 function scrollToRing(r) {
-  const top = H / 2 - r.ty, bottom = top + r.R * 2.75 + 10;
+  const top = H / 2 - r.ty - (TRAY ? r.R + r.S : 0), bottom = top + (TRAY ? r.R * 2 + r.S * 2 + CAPTION : r.R * 2.75 + 10);
   const lo = bottom - H + 20, hi = top - 20;
   scrollTo = clamp(scrollY, lo, hi);
 }
 function updateStack(dt) {
-  wall.scale.set(W * 1.4, H * 1.4, 1);
   const grid = wallGrid();
+  {
+    // The lining runs the full height of the tray, so it scrolls with the bracelets.
+    const tall = Math.max(H, grid.total) + H, wide = W * 1.3;
+    wall.scale.set(wide, tall, 1);
+    wall.position.set(0, H / 2 - tall / 2 + H * 0.4, -14);
+    trayTex.repeat.set(wide / 300, tall / 300);
+    trayNormal.repeat.copy(trayTex.repeat);
+  }
   if ([grid.cols, Math.round(grid.R), grid.rows, Math.round(W / 30), Math.round(H / 30)].join('|') !== standKey) rebuildStack();
   if (scrollTo != null) { scrollY += (scrollTo - scrollY) * Math.min(1, dt * 10); if (Math.abs(scrollTo - scrollY) < 0.5) scrollTo = null; }
   else if (!(spin && spin.scrolling)) { scrollY += scrollV * dt; scrollV *= Math.pow(0.08, dt); }
   scrollY = clamp(scrollY, 0, scrollMax());
   room.position.y = scrollY;
-  {
+  if (!TRAY) {
     // The sign sits in the band between the top of the first rail and the top of the screen.
     const topY = H / 2 - grid.top, lo = topY + 24, hi = H / 2 - 50;
     const signH = clamp((hi - lo) * 1.25, 60, 110), signW = Math.min(signH * (NEON_W / NEON_H), W * 0.92);
     neon.scale.set(signW, signW * (NEON_H / NEON_W), 1);
     neon.position.set(0, clamp(lo + signH * 0.45 + 6, lo + 10, Math.max(lo + 10, (lo + hi) / 2)), -60);
     neonGlow.position.set(0, neon.position.y + scrollY, 60);
-    lamp.position.set(W * 0.42, -H * 0.3, 220);
   }
-  const rest = tiltS * 0.35;
+  lamp.position.set(-W * 0.1, H * 0.25, 260);
+  lamp.distance = Math.max(W, H) * 1.4; lamp.decay = 1.2;
+  // The close-up: the picked bracelet glides to the middle and grows, a veil fades the rest of the tray, and the
+  // bracelet tips gently back and forth so its beads catch the light.
+  veil.scale.set(W * 2, H * 2, 1);
+  const lk = look ? 1 : 0;
+  veilK += (lk - veilK) * (reduce ? 1 : Math.min(1, dt * 8));
+  veil.material.opacity = veilK * 0.94;
+  veil.visible = veilK > 0.01;
+  const rest = TRAY ? 0 : tiltS * 0.35;
   rings.forEach((r) => {
     // Flying up to the peg after "Add to my wall": an arc from below, then a swing on landing.
     if (r.fly > 0) {
@@ -1013,7 +1102,7 @@ function updateStack(dt) {
       const t = ease(1 - r.fly);
       r.x = lerp(r.fromX, r.tx, t);
       r.y = lerp(r.fromY, r.ty, t) + Math.sin(t * Math.PI) * 50;
-      if (r.fly === 0) { thud(); chime(); buzz(25); r.av += 3.2; }
+      if (r.fly === 0) { thud(); chime(); buzz(25); r.av += TRAY ? 1.6 : 3.2; }
     } else if (r.drag) {
       r.x += (r.drag.x - r.x) * Math.min(1, dt * 22);
       r.y += (r.drag.y - r.y) * Math.min(1, dt * 22);
@@ -1025,18 +1114,32 @@ function updateStack(dt) {
     }
     r.px = r.x;
     // A pendulum: each loop swings about its peg and settles; tilting the phone leans them all.
-    r.av += ((rest - r.a) * 40 - r.av * 1.7) * dt;
+    r.av += ((rest - r.a) * 40 - r.av * (TRAY ? 6 : 1.7)) * dt;
     r.a = clamp(r.a + r.av * dt, -0.9, 0.9);
     if (reduce) { r.a = 0; r.av = 0; }
     const want = popRing === r || kbRing === r || r.drag || (spin && spin.lift && spin.ring === r) ? 1 : 0;
     r.lift = lerp(r.lift, want, reduce ? 1 : Math.min(1, dt * 14));
-    r.g.position.set(r.x, r.y, 10 + r.lift * 36);
-    r.g.rotation.z = r.a;
-    r.g.scale.setScalar(1 + r.lift * 0.06);
+    const focus = look && look.r === r ? 1 : 0;
+    r.look += (focus - r.look) * (reduce ? 1 : Math.min(1, dt * 7));
+    const k = ease(clamp(r.look, 0, 1));
+    // Close-up size and place: as large as fits above the caption, a little above the middle of the stage.
+    // It comes well forward of the veil, so its beads stay in front as it tips; the size allows for coming closer.
+    const camD = H / 2 / Math.tan((FOV * Math.PI) / 360), near = 170;
+    const big = (Math.min(W * 0.84, H * 0.6) / (2 * (r.R + r.S))) * ((camD - near) / camD), cy = H * 0.02 - scrollY;
+    r.g.position.set(lerp(r.x, 0, k), lerp(r.y, cy, k), 10 + r.lift * 36 + k * near);
+    r.g.rotation.z = r.a * (1 - k);
+    r.g.scale.setScalar((1 + r.lift * 0.06) * lerp(1, big, k));
+    r.pivot.rotation.x = reduce ? 0 : k * Math.sin(T * 0.7) * 0.32;
+    r.pivot.rotation.y = reduce ? 0 : k * Math.sin(T * 0.45 + 1) * 0.42;
     // Where the bracelet is on screen: its center and half-widths, for pointer hits and the keyboard button.
     r.g.updateWorldMatrix(true, false);
-    const c = toScreen(r.g, 0, -r.R * 1.15), e = toScreen(r.g, r.R + r.S, 0), f = toScreen(r.g, 0, -r.R * 2.3 - r.S);
-    r.sx = c.x; r.sy = c.y; r.rx = Math.max(10, Math.abs(e.x - c.x)); r.ry = Math.max(10, Math.abs(f.y - c.y));
+    if (TRAY) {
+      const c = toScreen(r.g, 0, 0), e = toScreen(r.g, r.R + r.S * 0.6, 0);
+      r.sx = c.x; r.sy = c.y; r.rx = r.ry = Math.max(10, Math.abs(e.x - c.x));
+    } else {
+      const c = toScreen(r.g, 0, -r.R * 1.15), e = toScreen(r.g, r.R + r.S, 0), f = toScreen(r.g, 0, -r.R * 2.3 - r.S);
+      r.sx = c.x; r.sy = c.y; r.rx = Math.max(10, Math.abs(e.x - c.x)); r.ry = Math.max(10, Math.abs(f.y - c.y));
+    }
     if (r.btn) {
       r.btn.style.width = r.rx * 2 + 'px';
       r.btn.style.height = r.ry * 2 + 'px';
@@ -1060,7 +1163,7 @@ function slotAt(p) {
   const x = p.x - W / 2, y = H / 2 - p.y - scrollY;
   let best = 0, bd = 1e9;
   for (let i = 0; i < rings.length; i++) {
-    const s = slotPos(i, grid), d = Math.hypot(x - s.x, y - (s.y - grid.R * 1.1));
+    const s = slotPos(i, grid), d = Math.hypot(x - s.x, y - (s.y - (TRAY ? 0 : grid.R * 1.1)));
     if (d < bd) { bd = d; best = i; }
   }
   return best;
@@ -1076,12 +1179,75 @@ function previewOrder(r, slot) {
 }
 // Is the pointer on the neon sign's word? (Stage pixels, y down.) A tap there opens the sign editor.
 function signAt(p) {
-  if (mode !== 'stack' || !neon.visible) return false;
+  if (TRAY || mode !== 'stack' || !neon.visible) return false;
   const c = toScreen(neon, 0, 0), e = toScreen(neon, 0.5, 0.5);
   const hw = Math.max(60, Math.abs(e.x - c.x) * signFrac + 16), hh = Math.max(28, Math.abs(e.y - c.y) * 0.7);
   return Math.abs(p.x - c.x) < hw && Math.abs(p.y - c.y) < hh;
 }
 
+/* ---------- Close-up: one bracelet at a time, large, tipping gently in the light ---------- */
+function openLook(r) {
+  if (!rings.includes(r)) return;
+  closePop(false); closeCustom(false); closeWallShare(false);
+  const first = !look;
+  look = { r, entry: r.entry };
+  scrollTo = null; scrollV = 0;
+  const base = rings.indexOf(r);
+  [0, 2, 4].forEach((n, i) => setTimeout(() => note(base + n), i * 60));
+  buzz(15);
+  syncLook();
+  if (first) {
+    $('look').hidden = false;
+    $('lookBar').hidden = false;
+    document.body.classList.add('looking');
+    $('lookClose').focus({ preventScroll: true, focusVisible: false });
+  }
+}
+function syncLook() {
+  if (!look) return;
+  const r = look.r, e = r.entry, i = rings.indexOf(r);
+  $('lookTitle').textContent = phraseOf(e.b) || 'A bracelet with ' + e.b.length + ' beads';
+  $('lookMeta').textContent = [e.t === 'trade' ? 'Traded' : '', e.n, fmtDate(e.d)].filter(Boolean).join(' · ');
+  $('lookCount').textContent = rings.length > 1 ? i + 1 + ' of ' + rings.length : '';
+  $('lookPrev').hidden = $('lookNext').hidden = rings.length < 2;
+  $('lookEdit').hidden = !!visit;
+  $('lookDetails').hidden = !!visit;
+  $('lookCopy').hidden = !visit;
+}
+function stepLook(d) {
+  if (!look || rings.length < 2) return;
+  const i = (rings.indexOf(look.r) + d + rings.length) % rings.length;
+  openLook(rings[i]);
+  tick(d > 0 ? 1.2 : 1.0, 0.05);
+}
+function closeLook(restore = true) {
+  if (!look) return;
+  const r = look.r;
+  look = null;
+  closePop(false);
+  $('look').hidden = true;
+  $('lookBar').hidden = true;
+  document.body.classList.remove('looking');
+  if (restore && r.btn && r.btn.isConnected) r.btn.focus({ preventScroll: true, focusVisible: false });
+}
+$('lookClose').addEventListener('click', () => closeLook());
+$('lookPrev').addEventListener('click', () => stepLook(-1));
+$('lookNext').addEventListener('click', () => stepLook(1));
+$('lookDetails').addEventListener('click', () => { if (look) openPop(look.r, $('lookDetails')); });
+$('lookEdit').addEventListener('click', () => { if (!look) return; const r = look.r; closeLook(false); popRing = r; $('editRing').click(); });
+$('lookCopy').addEventListener('click', () => { if (!look) return; const r = look.r; closeLook(false); popRing = r; $('copyRing').click(); });
+// Send one bracelet: the same trade link a finished bracelet makes, so a friend gets it strung and tied.
+$('lookShare').addEventListener('click', async () => {
+  if (!look) return;
+  const e = look.r.entry, btn = $('lookShare'), label = btn.querySelector('span');
+  const url = location.origin + location.pathname + '#t=' + encodeBracelet(e.b);
+  if (matchMedia('(pointer: coarse)').matches && navigator.share) {
+    try { await navigator.share({ title: '13 Beads', text: 'I made you a bracelet.', url }); return; } catch (err) { if (err.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); label.textContent = 'Copied'; } catch (err) { label.textContent = 'Copy failed'; }
+  say(label.textContent === 'Copied' ? 'Link copied.' : 'The link could not be copied.');
+  setTimeout(() => { label.textContent = 'Send'; }, 2000);
+});
 // The confirm popover sits just below the picked bracelet, or above it if there is no room.
 let popRing = null, holdTimer = 0, popOpener = null;
 function openPop(r, opener) {
@@ -1094,7 +1260,7 @@ function openPop(r, opener) {
   $('popTitle').textContent = phraseOf(e.b) || 'This bracelet';
   $('tagName').value = e.n || '';
   syncTagSrc(e);
-  $('tagDate').textContent = e.d ? 'Hung ' + fmtDate(e.d) : 'Hung a while ago';
+  $('tagDate').textContent = e.d ? 'Added ' + fmtDate(e.d) : 'Added a while ago';
   pop.hidden = false;
   pop.style.left = pop.style.top = '';
   if (!wideCase.matches) { $('editRing').focus({ preventScroll: true }); return; }
@@ -1833,6 +1999,11 @@ cv.addEventListener('pointerdown', (e) => {
     grabRing = mode === 'stack' ? ringAt(p) : null;
     spin.ring = grabRing;
     spin.sign = mode === 'stack' && !grabRing && signAt(p);
+    if (mode === 'stack' && look) {
+      grabRing = null; spin.ring = null; spin.look = true;
+      if (popRing) { closePop(false); spin.dismiss = true; }
+      return;
+    }
     if (!$('custom').hidden) { closeCustom(false); spin.dismiss = true; }
     else if (!$('shareCard').hidden) { closeShare(false); spin.dismiss = true; }
     else if (popRing) { closePop(false); spin.dismiss = true; }
@@ -1905,6 +2076,7 @@ cv.addEventListener('pointermove', (e) => {
     const dx = p.x - spin.x, dy = p.y - spin.y;
     if (Math.abs(dx) + Math.abs(dy) > 6) { spin.moved = true; clearTimeout(holdTimer); }
     if (spin.held || spin.dismiss) return;
+    if (spin.look) { spin.x = p.x; spin.y = p.y; return; }
     if (mode === 'stack') {
       if (spin.lift && grabRing) {
         // Carrying a bracelet: it follows the finger, and the others step aside for its new peg.
@@ -1956,6 +2128,21 @@ function release() {
     // A tap on the tied bracelet makes it hop and throw sparkles.
     if (!spin.moved && mode === 'tied' && kLin >= 1) { hop = 0; burst(); chime(); buzz(20); }
     clearTimeout(holdTimer);
+    // In the close-up: a sideways swipe goes to the next or previous bracelet, a tap on it jingles it, and a tap
+    // anywhere else goes back to the tray.
+    if (spin.look) {
+      const dx = spin.x - spin.x0, dy = spin.y - spin.y0;
+      if (!spin.dismiss && look) {
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) stepLook(dx < 0 ? 1 : -1);
+        else if (!spin.moved) {
+          const r = look.r;
+          if (Math.hypot(spin.x0 - r.sx, spin.y0 - r.sy) < r.rx * 1.05) { r.av += 1.4; const b = rings.indexOf(r); [0, 2, 4].forEach((n, i) => setTimeout(() => note(b + n), i * 60)); buzz(10); }
+          else closeLook();
+        }
+      }
+      grabRing = null; spin = null;
+      return;
+    }
     // A tap on the neon sign opens the editor with the sign's word ready to retype.
     if (!spin.moved && !spin.dismiss && spin.sign) { openCustom(true); chime(); }
     else if (mode === 'stack' && spin.lift && grabRing) {
@@ -1968,15 +2155,19 @@ function release() {
       buildRingButtons();
       buildHungList();
       thud(); buzz(15);
-      if (spin.moved) say(entryName(r.entry) + ' moved to peg ' + (r.slot + 1) + '.');
+      if (spin.moved) say(entryName(r.entry) + ' moved to spot ' + (r.slot + 1) + '.');
+      else if (TRAY) openLook(r);
       else openPop(r);
     } else if (!spin.moved && !spin.dismiss && mode === 'stack' && grabRing) {
-      // A tap: the bracelet lifts and jingles, and its options open.
-      grabRing.av += 2.6;
-      const base = rings.indexOf(grabRing);
-      [0, 2, 4].forEach((n, i) => setTimeout(() => note(base + n), i * 60));
-      buzz(15);
-      openPop(grabRing);
+      // A tap: on the tray it opens the close-up; on the old wall the bracelet jingled and its options opened.
+      if (TRAY) openLook(grabRing);
+      else {
+        grabRing.av += 2.6;
+        const base = rings.indexOf(grabRing);
+        [0, 2, 4].forEach((n, i) => setTimeout(() => note(base + n), i * 60));
+        buzz(15);
+        openPop(grabRing);
+      }
     } else if (mode === 'stack' && spin.scrolling) {
       scrollV = clamp(spin.vy, -2400, 2400);
     }
@@ -2007,7 +2198,7 @@ function release() {
 cv.addEventListener('pointerup', release);
 // A mouse wheel or trackpad scrolls a tall wall.
 cv.addEventListener('wheel', (e) => {
-  if (mode !== 'stack' || scrollMax() <= 0) return;
+  if (mode !== 'stack' || look || scrollMax() <= 0) return;
   e.preventDefault();
   scrollTo = null;
   scrollY = clamp(scrollY + e.deltaY, 0, scrollMax());
@@ -2627,10 +2818,10 @@ $('wallShareClose').addEventListener('click', () => closeWallShare());
 $('wallShare').addEventListener('keydown', (e) => trapTab(e, $('wallShare')));
 $('wallLinkBtn').addEventListener('click', async () => {
   const btn = $('wallLinkBtn'), label = btn.querySelector('span');
-  if (!stack.length) { say('Hang a bracelet first, then share your wall.'); return; }
+  if (!stack.length) { say('Add a bracelet first, then share your collection.'); return; }
   const url = wallLink();
   if (matchMedia('(pointer: coarse)').matches && navigator.share) {
-    try { await navigator.share({ title: '13 Beads', text: decor.name ? 'Come see ' + decor.name + "'s bracelet wall." : 'Come see my bracelet wall.', url }); return; } catch (e) { if (e.name === 'AbortError') return; }
+    try { await navigator.share({ title: '13 Beads', text: decor.name ? 'Come see ' + decor.name + "'s bracelet collection." : 'Come see my bracelet collection.', url }); return; } catch (e) { if (e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(url); label.textContent = 'Link copied'; } catch (e) { label.textContent = 'Copy failed'; }
   say(label.textContent + '.');
@@ -2665,7 +2856,7 @@ $('takeOff').addEventListener('click', () => {
   rebuildStack();
   syncStack();
   tick(0.6, 0.14);
-  say(stack.length ? 'Taken off the wall.' : EMPTY_WALL);
+  say(stack.length ? 'Taken out of your collection.' : EMPTY_WALL);
   // Keyboard users land on the next bracelet, or on Make another if the wall is now empty.
   if (fromKeys) { const n = $('ringBtns').children[Math.min(i, rings.length - 1)]; (n || $('another')).focus({ preventScroll: true }); }
 });
@@ -2693,11 +2884,15 @@ $('editRing').addEventListener('click', () => {
   kLin = 0;
   setMode('line');
   tick(1.2, 0.12);
-  say(current.length && !isStarter ? 'Back on the string. Your string in progress went on the wall in its place.' : 'Back on the string. Edit it, then add it to your wall again.');
+  say(current.length && !isStarter ? 'Back on the string. Your string in progress went into your collection in its place.' : 'Back on the string. Edit it, then add it to your collection again.');
 });
 document.addEventListener('keydown', (e) => {
+  if (look && !popRing && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !/^(INPUT|TEXTAREA)$/.test((document.activeElement || {}).tagName)) {
+    e.preventDefault(); stepLook(e.key === 'ArrowRight' ? 1 : -1); return;
+  }
   if (e.key !== 'Escape') return;
   if (popRing) closePop();
+  else if (look) closeLook();
   else if (!$('custom').hidden) closeCustom();
   else if (!$('shareCard').hidden) closeShare();
   else if (!$('wallShare').hidden) closeWallShare();
@@ -2865,7 +3060,7 @@ function startVisit(v) {
   rebuildStack();
   visitUI();
   setMode('stack');
-  say('Visiting a wall with ' + stack.length + ' bracelets. Tap one to take a copy onto your own string.');
+  say('Visiting a collection with ' + stack.length + ' bracelets. Tap one to take a copy onto your own string.');
 }
 function endVisit() {
   if (!visit) return;
@@ -2925,7 +3120,7 @@ async function start() {
   try { seen = !!localStorage.getItem('13beads.seen'); } catch (e) { /* optional */ }
   const fresh = !seen && !beads.length;
   requestAnimationFrame((t) => { last = t; frame(t); });
-  openIntro(demo ? 'Start the demo' : fresh || got || visiting ? (got ? 'Open your bracelet' : visiting ? 'Visit the wall' : 'Start stringing') : null, go);
+  openIntro(demo ? 'Start the demo' : fresh || got || visiting ? (got ? 'Open your bracelet' : visiting ? 'See the collection' : 'Start stringing') : null, go);
 }
 function runDemo() {
   stopStringing();
