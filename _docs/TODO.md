@@ -4,10 +4,13 @@ Top item is the next thing to do.
 
 ## Next
 
-1. **Phone checks.** Session 7 first: the Wall pill in the header (iPhone with Tilt showing), reopening the home screen app after a deploy (it should reload into the new version on the string screen), the seven new colors, the resized dice, clay discs, daisies, and smileys, and a few of the new Surprise designs. Then session 6: the hook wall (tap, hold and drag, scroll, tilt swing), the tag field above the keyboard, Share your wall and opening a wall link, Take a copy, add to home screen and open in airplane mode, and how 24 bracelets perform on an older phone. Then the earlier layouts: swipe on the case header, the fold, the command bar, the footer below the fold, the Share and Decorate sheets above the keyboard (iPhone Safari especially), Save card from the sheet, and the bracelet options sheet. On a real phone: shake to spill (tap Tilt first on iPhone; tune the 17 m/s² threshold in `listenShake` if needed), trade links end to end with a QR scan, the share sheet for Save card and Send link, and Tilt. Also session 4 and 5: the black snake, two strands (and the partner colors in Cross and Diamond) (cord picker, tap a cord, drag between cords, Cross, Diamond, Bubble), the new beads and charms, the jump chips, and Surprise me.
-2. **Wall performance.** If the phone pass shows a full wall (24 loops) stuttering, build loops lazily (only rows near the viewport) or lower bead detail on the wall. Nothing has been measured yet.
-3. **Design board.** The Wall screens on the board still show the cones, and no screen shows the new Wall pill in the header. Recapture the wall (phone and desktop, light and dark) for the board before the next design round there.
-4. **Heart hands model.** Shauna scans her sculpture (`_docs/findings/2026-10-08-heart-hands-model.md`) or finds an openly licensed model. Lower priority now that the wall is settled; it would be a prop, not the display.
+1. **Full collection on an older phone.** Fill the tray (24 bracelets) and check that scrolling and the close-up stay smooth. If not, build bracelets lazily (only rows near the viewport) or lower bead detail on the tray. Nothing measured yet.
+2. **Two strands in the close-up.** Two-strand bracelets on the tray and in the close-up view have not been checked closely (the cords should run side by side around the circle and meet at shared beads).
+3. **Design board.** The board still shows the cone and peg wall displays. Recapture the start screen, the tray, and the close-up (phone and desktop, light and dark) before the next design round there.
+4. **Heart hands model.** Shauna scans her sculpture (`_docs/findings/2026-10-08-heart-hands-model.md`) or finds an openly licensed model. Low priority; it would be a charm or prop now, not the display.
+5. **Older phone checks still open** from earlier sessions: shake to spill strength, trade links end to end with a QR scan, the share sheet for Save card and Send link, Tilt, and adding to the home screen and opening offline.
+
+Done 2026-11-02 (session 7): start screen, logo mark and icons, link preview, sample bracelet, bigger desktop beads, `?demo` recording mode, the tray and close-up replacing the wall, restyled share pictures, Web Analytics. Shauna checked the launch polish on her iPhone. The games page card keeps her painted art (her call).
 
 ## Later, agreed in principle
 
@@ -16,8 +19,6 @@ Top item is the next thing to do.
 - Clasps and cord choices at the finish step.
 - Length budget: revisit (Shauna).
 - True-size beads with wrist sizes: on hold.
-- Wall: dim the other bracelets while one's options sheet is open (the held one already lifts).
-- Wall: an empty wall could show one ghost loop on the first peg as a hint (Shauna: stay as is for now, 2026-10-12).
 - More props, only if they can be done well: a polaroid once there is a real picture to show (the share card of a bracelet, say).
 - Wrist shot: the finished loop over the phone camera, saved as a picture (not built, 2026-10-12).
 - Twist and Daisy two-strand patterns (dropped for now, 2026-10-11).
