@@ -240,6 +240,7 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 | 2026-11-02 | Empty wall | A sample bracelet on the first peg, and the ticket moved up | Supersedes 2026-10-12 "stays as one bare rail": new visitors from a post should see what the wall is for. |
 | 2026-11-02 | Wall look | Jewelry tray overview plus a close-up view of one bracelet at a time | Shauna did not like the wall and asked to see options 1 (tray) and 2 (lookbook) together, built straight to live. |
 | 2026-11-02 | Neon sign, fairy lights, ticket stub | Removed from view for now (code kept) | Shauna: remove them for now. |
+| 2026-11-02 | Label for the wall screen | "Collection" | Shauna, after the tray replaced the wall. |
 
 ## Wrong turns worth knowing
 
