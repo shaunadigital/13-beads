@@ -6,10 +6,10 @@ Read `_docs/PROJECT_STATUS.md` first, then `_docs/TODO.md`. `README.md` covers t
 
 ## Where things are
 
-- Live: https://games.shauna.digital/13-beads (also https://13-beads.vercel.app)
+- Live: https://shauna.digital/games/13-beads (also https://13-beads.vercel.app)
 - Repository: `shaunagits/13-beads`. Vercel project `13-beads`, team `shaunagits-projects`. Every push to `main` deploys to production.
 - Local copy on Shauna's Mac: `~/Desktop/claudecode/13-beads`
-- Games home page: separate repository `shaunagits/games`, live at https://games.shauna.digital
+- Games home page: separate repository `shaunagits/games`, live at https://shauna.digital/games/
 
 ## Run and check
 

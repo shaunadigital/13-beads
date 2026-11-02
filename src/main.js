@@ -1443,7 +1443,7 @@ function cardCanvas(note) {
   }
   x.font = `500 32px Figtree, system-ui, sans-serif`;
   x.fillStyle = muted;
-  x.fillText('games.shauna.digital/13-beads', CW / 2, CH - 70);
+  x.fillText('shauna.digital/games/13-beads', CW / 2, CH - 70);
   return c;
 }
 

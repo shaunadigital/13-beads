@@ -4,11 +4,11 @@ A craft room in the browser. String a friendship bracelet, spell a phrase, finis
 
 Built with Vite and Three.js. No backend and no accounts: everything a player makes is saved in their browser's local storage.
 
-**▶ Play it: [games.shauna.digital/13-beads](https://games.shauna.digital/13-beads)**
+**▶ Play it: [shauna.digital/games/13-beads](https://shauna.digital/games/13-beads)**
 
 ![13 Beads](.github/screenshot.jpg)
 
-- Live: https://games.shauna.digital/13-beads (also https://13-beads.vercel.app)
+- Live: https://shauna.digital/games/13-beads (also https://13-beads.vercel.app)
 - Hosting: Vercel project `13-beads`, deployed automatically from the `main` branch of this repository.
 - The games home page that links here lives in the separate `games` repository.
 
