@@ -2607,17 +2607,31 @@ function surpriseThumb() {
 let surpriseAt = Math.floor(Math.random() * PRESETS.length);
 function surprise() {
   if (mode !== 'line') return;
-  const p = PRESETS[surpriseAt++ % PRESETS.length];
+  const p = PRESETS[surpriseAt++ % PRESETS.length], had = beads.length;
   pushUndo();
   stopStringing();
   beads.forEach(drop);
   beads = [];
   sync();
   const list = p.beads.map((d) => (twoCords ? { ...d, c: 0 } : { ...d }));
-  say('Surprise: ' + p.name + '. Undo brings your string back.');
+  say('Surprise: ' + p.name + (had ? '. Undo brings your string back.' : '. The trash button clears it.'));
   if (reduce) { list.forEach((d) => addBead(d, true, 'R')); return; }
   let step = 0;
   phraseTimer = setInterval(() => { const d = list.shift(); if (!d || !addBead(d, true, 'R', step++)) stopStringing(); }, 110);
+}
+// Coming back to the string from the collection (back arrow, Make another, or the Collection button). The tray is
+// redrawn first, from the start, so it is settled before the first tap: on iPhone a tap that lands while a scroll
+// container is still settling only stops the scroll, which read as a Surprise button that did nothing. An empty
+// string then gets a Surprise bracelet on its own; the trash button clears it for a blank start.
+let autoSurpriseTimer = 0;
+function backToString() {
+  const from = mode;
+  setMode('line');
+  if (from === 'line') return;
+  buildTray();
+  clearTimeout(autoSurpriseTimer);
+  if (beads.length) return;
+  autoSurpriseTimer = setTimeout(() => { if (mode === 'line' && !beads.length) surprise(); }, reduce ? 0 : 350);
 }
 // Turn the second cord on or off. Turning it off puts every bead back on one cord.
 function setTwo(on, quiet) {
@@ -2934,14 +2948,14 @@ $('shareCard').addEventListener('submit', (e) => {
 });
 $('cardCancel').addEventListener('click', () => closeShare());
 $('shareCard').addEventListener('keydown', (e) => trapTab(e, $('shareCard')));
-$('another').addEventListener('click', () => { if (visit) { endVisit(); say('Back on your own wall.'); } else setMode('line'); });
+$('another').addEventListener('click', () => { if (visit) { endVisit(); say('Back on your own wall.'); } else backToString(); });
 // The header's back arrow: on the stringing screen it goes to the games site; on Finished and the wall it goes back
 // to the string (Shauna, 2026-10-11).
 $('backArrow').addEventListener('click', (e) => {
   if (mode === 'line') return;
   e.preventDefault();
   arm();
-  setMode('line');
+  backToString();
 });
 $('takeOff').addEventListener('click', () => {
   const i = rings.indexOf(popRing), fromKeys = popOpener && popOpener.classList.contains('ring-btn');
@@ -3003,7 +3017,7 @@ cv.addEventListener('contextmenu', (e) => {
 });
 $('stackBtn').addEventListener('click', () => {
   arm();
-  if (mode === 'stack') { setMode('line'); return; }
+  if (mode === 'stack') { backToString(); return; }
   stopStringing();
   kLin = 0;
   setMode('stack');
