@@ -312,8 +312,11 @@ function sync() {
   c.classList.toggle('full', pct >= 100);
   c.setAttribute('aria-label', n + (n === 1 ? ' bead' : ' beads') + ' on the string, ' + pct + ' percent full');
   $('clear').disabled = !n;
+  syncEmptyHint();
   save();
 }
+// An empty string shows a quiet hint on the mat, so a bare cord does not read as broken.
+function syncEmptyHint() { const h = $('emptyHint'); if (h) h.hidden = !(mode === 'line' && !beads.length); }
 function pushUndo() { undoStack.push(JSON.stringify(defs())); if (undoStack.length > 40) undoStack.shift(); redoStack.length = 0; syncUndo(); }
 function syncUndo() { $('undo').disabled = !undoStack.length; $('redo').disabled = !redoStack.length; $('clear').disabled = !beads.length; }
 
@@ -383,6 +386,7 @@ function setMode(m) {
   $('backArrow').title = m === 'line' ? 'All games' : 'Back to your string';
 
   $('count').hidden = m !== 'line';
+  syncEmptyHint();
   closeLook(false);
   closePop(false);
   closeCustom(false);
@@ -3235,7 +3239,7 @@ function openIntro(label, go) {
   const box = $('intro'), btn = $('introGo');
   const close = () => {
     try { localStorage.setItem('13beads.seen', '1'); } catch (e) { /* optional */ }
-    document.querySelectorAll('.app, footer.credit').forEach((el) => { el.inert = false; });
+    document.querySelectorAll('.app').forEach((el) => { el.inert = false; });
     box.classList.add('out');
     box.setAttribute('aria-hidden', 'true');
     setTimeout(() => { box.hidden = true; }, reduce ? 0 : 480);

@@ -43,6 +43,7 @@
       </ol>
       <button class="finish intro-go" id="introGo" type="button" disabled><span id="introGoLabel">Loading beads</span></button>
       <p class="intro-sound"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Every bead plays a note. Sound on.</p>
+      <p class="fan-note intro-fan">Fan-made. Not affiliated with any artist or label.</p>
     </div>
   </div>
   <div class="app" inert>
@@ -104,10 +105,17 @@
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v3.2h3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9.2l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z" fill="currentColor"/></svg>
           <span class="mi-label">Start over</span>
         </button>
+        <div class="menu-rule"></div>
+        <nav class="menu-links" aria-label="About this game">
+          <a href="https://shauna.digital/games/">More games</a>
+          <a href="#feedback" data-feedback>Feedback</a>
+          <a href="https://shauna.dev">Made by Shauna</a>
+        </nav>
+        <p class="fan-note">Fan-made. Not affiliated with any artist or label.</p>
       </div>
     </header>
 
-    <div class="stage" id="stage"><canvas id="cv" aria-label="Your bracelet string"></canvas>
+    <div class="stage" id="stage"><canvas id="cv" aria-label="Your bracelet string"></canvas><p class="empty-hint" id="emptyHint" aria-hidden="true" hidden>Pick a bead from the case, or try <b>Surprise</b>.</p>
       <div class="hud" id="hud" data-mode="line">
         <div class="ring-btns" id="ringBtns" data-show="stack" role="group" aria-label="Bracelets in your collection"></div>
         <!-- The close-up view of one bracelet: swipe or use the arrows for the next one. -->
@@ -315,15 +323,6 @@
     </div>
 
   </div>
-  <footer class="credit" inert>
-    <a href="https://shauna.digital/games/">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      More games
-    </a>
-    <a href="#feedback" data-feedback>Feedback</a>
-    <a href="https://shauna.dev">Made by Shauna</a>
-    <p class="fan-note">Fan-made. Not affiliated with any artist or label.</p>
-  </footer>
   <script type="module" src="/src/main.js"></script>
   <script src="https://shauna.digital/games/feedback.js" defer></script>
   <!-- Vercel Web Analytics (no cookies). The game is served at a domain root and under /games/13-beads on another
