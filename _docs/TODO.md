@@ -8,7 +8,7 @@ Top item is the next thing to do.
 2. **Heart hands model.** Shauna scans her sculpture (`_docs/findings/2026-10-08-heart-hands-model.md`) or finds an openly licensed model. Low priority; it would be a charm or prop now, not the display.
 3. **Older phone checks still open** from earlier sessions: shake to spill strength, trade links end to end with a QR scan, the share sheet for Save card and Send link, Tilt, and adding to the home screen and opening offline.
 
-Done 2026-11-02 (session 7): start screen, logo mark and icons, link preview, sample bracelet, bigger desktop beads, `?demo` recording mode, the tray and close-up replacing the wall, restyled share pictures, Web Analytics. Shauna checked the launch polish on her iPhone. The games page card keeps her painted art (her call). Two-strand bracelets checked on the tray and in the close-up. The design board has two new rows at the top with screenshots of the current screens (phone and desktop, light and dark, plus the share pictures).
+Done 2026-11-02 (session 8): start screen, logo mark and icons, link preview, sample bracelet, bigger desktop beads, `?demo` recording mode, the tray and close-up replacing the wall, restyled share pictures, Web Analytics. Shauna checked the launch polish on her iPhone. The games page card keeps her painted art (her call). Two-strand bracelets checked on the tray and in the close-up. The design board has two new rows at the top with screenshots of the current screens (phone and desktop, light and dark, plus the share pictures).
 
 ## Later, agreed in principle
 
