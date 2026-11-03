@@ -27,6 +27,8 @@ const HINT = 'Tap a bead below to add it. On the string: tap to remove, drag to 
 const TIED_HINT = 'Drag to spin it. Tap for sparkles.';
 // The collection is shown as a jewelry tray (2026-11-02). TRAY false brings back the peg wall, which is kept in code.
 const TRAY = true;
+// The tray's shadow pass is redrawn only when something changes (see updateStack).
+let lastShadowScroll = -1, lastVeil = false, shadowDirty = true;
 // Wall decoration: a few curated colors, and the word on the neon sign.
 const WALL_COLORS = {
   // shade: the deeper tone toward the bottom of the wall. night: how the wall reads under lamp and neon light.
@@ -255,6 +257,7 @@ function readTheme() {
 }
 
 function resize() {
+  shadowDirty = true;
   const r = cv.getBoundingClientRect();
   W = Math.max(200, r.width);
   H = Math.max(160, r.height);
@@ -388,6 +391,8 @@ function setMode(m) {
   if (visit && m !== 'stack') endVisit();
   strand.visible = m !== 'stack';
   board.visible = m === 'stack';
+  renderer.shadowMap.autoUpdate = m !== 'stack';
+  shadowDirty = true;
   backdrop.visible = false;
   table.visible = m !== 'stack';
   applyMood();
@@ -533,6 +538,7 @@ function applyMood() {
   // At night the tray sits under one warm lamp. (The neon sign and fairy lights were removed on 2026-11-02; their
   // code stays for now, switched off.)
   lamp.intensity = night ? 2.4 : 0;
+  shadowDirty = true;
   veil.material.color.set(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f1ebf7');
   neonGlow.intensity = 0;
   neon.visible = false;
@@ -888,7 +894,9 @@ function makeTag(entry, R) {
 // A bracelet on its peg. The group's origin is the point of the cord resting on the peg, so a swing turns it there.
 function buildRing(entry, grid) {
   const list = entry.b.filter((d) => d && UNIT[d.k]);
-  const lay = layoutCords(list), U = lay.U, R = grid.R;
+  // On the tray a two-strand bracelet's outer cord runs outside the circle, so its circle is drawn a little
+  // smaller to keep it inside its spot and clear of the caption.
+  const lay = layoutCords(list), U = lay.U, R = TRAY && lay.two ? grid.R - grid.S * 0.45 : grid.R;
   const path = loopPath(R), cum = cumOf(path), Lp = cum[cum.length - 1];
   const S = Math.min(grid.S, (Lp * 0.9) / Math.max(U, 1));
   const g = new THREE.Group(), loop = new THREE.Group(), hangs = [];
@@ -934,7 +942,7 @@ function buildRing(entry, grid) {
   loop.position.y = R;
   pivot.add(loop);
   g.add(pivot);
-  const r = { g, loop, pivot, R, S, hangs, entry, a: 0, av: 0, fly: 0, lift: 0, look: 0, x: 0, y: 0, tx: 0, ty: 0, slot: 0, sx: 0, sy: 0, rx: R, ry: R, drag: null };
+  const r = { g, loop, pivot, R, S, ext: lay.two ? S * 1.2 : S * 0.6, hangs, entry, a: 0, av: 0, fly: 0, lift: 0, look: 0, x: 0, y: 0, tx: 0, ty: 0, slot: 0, sx: 0, sy: 0, rx: R, ry: R, drag: null };
   r.tag = { redraw: () => captionOf(r) };
   return r;
 }
@@ -959,6 +967,7 @@ function rebuildStack() {
   });
   buildRingButtons();
   buildHungList();
+  shadowDirty = true;
   if (look) {
     const r = rings.find((o) => o.entry === look.entry);
     if (r) { look.r = r; r.look = 1; syncLook(); } else closeLook(false);
@@ -1095,7 +1104,10 @@ function updateStack(dt) {
   veil.material.opacity = veilK * 0.94;
   veil.visible = veilK > 0.01;
   const rest = TRAY ? 0 : tiltS * 0.35;
+  let moved = Math.abs(scrollY - lastShadowScroll) > 0.3 || veil.visible !== lastVeil;
+  lastShadowScroll = scrollY; lastVeil = veil.visible;
   rings.forEach((r) => {
+    const was = r.x + r.y * 7 + r.a * 100 + r.lift * 50 + r.look * 90;
     // Flying up to the peg after "Add to my wall": an arc from below, then a swing on landing.
     if (r.fly > 0) {
       r.fly = Math.max(0, r.fly - dt / 0.75);
@@ -1134,7 +1146,7 @@ function updateStack(dt) {
     // Where the bracelet is on screen: its center and half-widths, for pointer hits and the keyboard button.
     r.g.updateWorldMatrix(true, false);
     if (TRAY) {
-      const c = toScreen(r.g, 0, 0), e = toScreen(r.g, r.R + r.S * 0.6, 0);
+      const c = toScreen(r.g, 0, 0), e = toScreen(r.g, r.R + r.ext, 0);
       r.sx = c.x; r.sy = c.y; r.rx = r.ry = Math.max(10, Math.abs(e.x - c.x));
     } else {
       const c = toScreen(r.g, 0, -r.R * 1.15), e = toScreen(r.g, r.R + r.S, 0), f = toScreen(r.g, 0, -r.R * 2.3 - r.S);
@@ -1145,7 +1157,11 @@ function updateStack(dt) {
       r.btn.style.height = r.ry * 2 + 'px';
       r.btn.style.transform = `translate(${r.sx - r.rx}px, ${r.sy - r.ry}px)`;
     }
+    if (Math.abs(r.x + r.y * 7 + r.a * 100 + r.lift * 50 + r.look * 90 - was) > 0.02 || r.look > 0.01) moved = true;
   });
+  // A full tray is a lot of beads. The shadow pass (which draws them all a second time) is only redone when
+  // something on the tray moves or the tray scrolls, so a still tray costs about half as much each frame.
+  if (moved || shadowDirty) { renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
 }
 // Which bracelet is under the pointer (stage pixels, y down): the nearest one whose loop the point falls in.
 function ringAt(p) {

@@ -4,11 +4,10 @@ Top item is the next thing to do.
 
 ## Next
 
-1. **Full collection on an older phone.** Fill the tray (24 bracelets) and check that scrolling and the close-up stay smooth. If not, build bracelets lazily (only rows near the viewport) or lower bead detail on the tray. Nothing measured yet.
-2. **Two strands in the close-up.** Two-strand bracelets on the tray and in the close-up view have not been checked closely (the cords should run side by side around the circle and meet at shared beads).
-3. **Design board.** The board still shows the cone and peg wall displays. Recapture the start screen, the tray, and the close-up (phone and desktop, light and dark) before the next design round there.
-4. **Heart hands model.** Shauna scans her sculpture (`_docs/findings/2026-10-08-heart-hands-model.md`) or finds an openly licensed model. Low priority; it would be a charm or prop now, not the display.
-5. **Older phone checks still open** from earlier sessions: shake to spill strength, trade links end to end with a QR scan, the share sheet for Save card and Send link, Tilt, and adding to the home screen and opening offline.
+1. **Full collection on a real older phone.** Measured in the cloud renderer (2026-11-02): a full tray of 24 draws about 200 draw calls and 185,000 triangles for the rows on screen, plus a shadow pass; the stringing screen is about 10,000. The shadow pass is now redrawn only when something on the tray moves or it scrolls. If an older phone still stutters, build bracelets lazily (only rows near the viewport) or use fewer segments per bead on the tray.
+2. **Design board.** The board still shows the cone and peg wall displays. Recapture the start screen, the tray, and the close-up (phone and desktop, light and dark) before the next design round there.
+3. **Heart hands model.** Shauna scans her sculpture (`_docs/findings/2026-10-08-heart-hands-model.md`) or finds an openly licensed model. Low priority; it would be a charm or prop now, not the display.
+4. **Older phone checks still open** from earlier sessions: shake to spill strength, trade links end to end with a QR scan, the share sheet for Save card and Send link, Tilt, and adding to the home screen and opening offline.
 
 Done 2026-11-02 (session 7): start screen, logo mark and icons, link preview, sample bracelet, bigger desktop beads, `?demo` recording mode, the tray and close-up replacing the wall, restyled share pictures, Web Analytics. Shauna checked the launch polish on her iPhone. The games page card keeps her painted art (her call).
 
