@@ -456,8 +456,13 @@ header { gap: 8px; min-height: 44px; }
 .shape-chip, .letter-chip { width: 40px; height: 40px; }
 .phrase input { height: 44px; padding-block: 0; }
 /* Compartments: 60px wells, snapping as the case scrolls. Charms and dangles have no options, so they get three rows. */
-.tray { flex: none; height: 126px; gap: 6px; scroll-snap-type: x proximity; }
-.bead-btn { border-radius: 12px; scroll-snap-align: start; }
+/* No scroll snapping (2026-11-03): on iPhone a tap could make the tray re-snap one column over, and a tray that
+   moves under the finger cancels the tap. Seen on some colors, where Surprise slid out of view and did nothing.
+   The press shrinks the picture, not the well, so nothing in the tray changes size while a finger is on it. */
+.tray { flex: none; height: 126px; gap: 6px; scroll-snap-type: none; overscroll-behavior-x: contain; }
+.bead-btn { border-radius: 12px; }
+.bead-btn:active { transform: none; }
+.bead-btn:active img { transform: scale(.9); }
 .bead-btn img { width: 48px; height: 48px; }
 .bead-btn.surprise::after { font-size: 11px; }
 .case[data-tab="charms"] .tray, .case[data-tab="dangles"] .tray { grid-template-rows: repeat(3, 60px); height: 192px; }
