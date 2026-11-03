@@ -1101,7 +1101,7 @@ function updateStack(dt) {
   veil.scale.set(W * 2, H * 2, 1);
   const lk = look ? 1 : 0;
   veilK += (lk - veilK) * (reduce ? 1 : Math.min(1, dt * 8));
-  veil.material.opacity = veilK * 0.94;
+  veil.material.opacity = veilK * (isDark() ? 0.97 : 0.94);
   veil.visible = veilK > 0.01;
   const rest = TRAY ? 0 : tiltS * 0.35;
   let moved = Math.abs(scrollY - lastShadowScroll) > 0.3 || veil.visible !== lastVeil;
