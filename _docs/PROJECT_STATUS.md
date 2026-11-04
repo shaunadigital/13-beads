@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, including these docs.
+Last updated: 2026-11-03 (session 9). Everything below is on `main` and live, including these docs.
 
 ## What exists
 
@@ -96,11 +96,13 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 
 ## Not verified
 
+- Session 9 on a real phone: the one-screen layout (no page scroll) and the short-phone sizing on her iPhone, the menu links, the hint on an empty string, Surprise stringing itself after the collection, and above all the tray tap fix. The tap bug only happens on a real iPhone; Chromium and WebKit with simulated taps never reproduced it.
+
 - Session 8 on a real phone: Shauna checked the start screen, sound on the Start tap, the link preview, and the tray and close-up on her iPhone and said it looks great. Not checked on a real device: a full tray of 24 on an older phone (see TODO), the collection photo and story card through the phone share sheet, `?demo` recording on a phone, and the analytics script on iPhone Safari with content blockers.
 
 - Session 7 on a real phone: the header pill (now labeled Collection) on a 375px iPhone with Tilt showing (checked only in the cloud renderer), the reload into a newer version when a home screen app is reopened (tested only in desktop Chrome with a faked newer page), and the new colors and resized beads (dice, clay disc, daisy, smiley) at phone size on felt and wood.
 - Session 6 on a real phone: the name field and prop switches in Decorate, the hook wall (tap, hold and drag between pegs, scroll by drag, swing on tilt), the tag field above the keyboard, Share your wall through the share sheet, opening a wall link and taking a copy, adding to the home screen and opening with no signal (the service worker was only checked by a build; it is not exercised by the cloud renderer), and wall performance with 24 bracelets on an older phone (24 loops of beads is a lot more geometry than 12 rings were).
-- Everything from the session 5 redesigns on a real phone: swiping the bead case header, the fold animation, the command bar, the footer below the fold, the Share, Decorate, and bracelet options sheets (especially that they sit above the keyboard in iPhone Safari, via `visualViewport`), and the live card preview's speed on an older phone. Only the cloud software renderer was used.
+- Everything from the session 5 redesigns on a real phone: swiping the bead case header, the fold animation, the command bar, the Share, Decorate, and bracelet options sheets (especially that they sit above the keyboard in iPhone Safari, via `visualViewport`), and the live card preview's speed on an older phone. Only the cloud software renderer was used.
 - Desktop at sizes between 900 and 1280px wide, and very short desktop windows (the right-hand panels scroll, untested at small heights).
 - Two strands on a real phone: the cord picker row, tapping a cord to pick it, dragging beads between cords, and how Cross, Diamond, and Bubble read at phone size.
 - Session 4 beads and charms on a phone (seed beads, round letters, the new dangles, the S snake), and the jump chips and Recent row.
@@ -117,6 +119,8 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 - True-size beads: on hold.
 - Nothing from sessions 6 to 8 is waiting on an answer. Everything she was asked was decided (see the decision rows).
 - The TikTok post and its caption are being handled in another session.
+- Session 9, waiting on Shauna: does Surprise now work on her iPhone in Chrome (sky blue or mint, trash button, then Surprise)? The fix could not be confirmed here.
+- Session 9, content for the "I built this with AI" TikTok, unanswered: rebuild the flat Oct 7 prototype and capture it (three stages: flat, first 3D, today)? A simulated typing clip of her first prompt, or will she record the real chat? Vertical 1080 x 1920? Sources are in `_docs/findings/2026-11-03-iphone-surprise-tap.md`.
 
 ## Decisions
 
@@ -167,7 +171,7 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 | 2026-10-09 | Starter bracelet | "13 BEADS" in letter beads, mirroring the logo; replaces "ENCORE". Start over button restores it | Shauna asked. |
 | 2026-10-09 | Charms from Shauna's drawings | Mini bracelet built; heart hands not built in code | Shauna: only if they look good. Heart hands are organic and need a real model. |
 | 2026-10-09 | Start over | Resets the string only, never the wall | Shauna. |
-| 2026-10-09 | Credit and back link | Both kept, moved from the header to a footer line | Different jobs: back to the arcade, and credit to Shauna. Frees the header on small phones. |
+| 2026-10-09 | Credit and back link | Both kept, moved from the header to a footer line | Different jobs: back to the arcade, and credit to Shauna. Frees the header on small phones. (Superseded 2026-11-03: no footer; the links are in the More menu.) |
 | 2026-10-09 | Hanging charm size | All dangles drawn at one size (about 1.3 to 1.4 times the original) | The first eight looked tiny next to the newer ones. Supersedes the 1.02 decision. |
 | 2026-10-09 | Send feedback link | Not added for now; footer stays as is | Shauna: not necessary right now. |
 | 2026-10-09 | Favicon | A tiny bracelet: colored beads on the lower two thirds of a cord loop, top left bare | Shauna asked. A full ring of beads read as a wreath. |
@@ -205,7 +209,7 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 | 2026-10-10 | Two-strand controls | Word labels, tap a cord to pick it, highlighted cord, ghost bead | Shauna asked for easier controls and approved all four. |
 | 2026-10-10 | Bubble pattern | Added; Twist and Daisy wait | Shauna wanted to see Bubble first. |
 | 2026-10-10 | Switching bead types | Recent group and jump chips | Shauna picked ideas 1 and 2 of four (press and hold to copy a bead, and add three at once, not built). |
-| 2026-10-10 | Surprise me names | Album titles, plus a fan-made note in the footer | Shauna picked option A. Still never the artist's name, logos or title lettering, cover art, or lyrics. Revisit if the game ever becomes paid or sponsored. |
+| 2026-10-10 | Surprise me names | Album titles, plus a fan-made note in the footer | Shauna picked option A. Still never the artist's name, logos or title lettering, cover art, or lyrics. Revisit if the game ever becomes paid or sponsored. (2026-11-03: the note moved to the start screen and the More menu.) |
 | 2026-10-10 | Surprise me name | Spelled in letter beads on the bracelet; the count pill label was removed | Shauna: she wants the name in the bracelet with the other styled beads, not in the corner of the screen. |
 | 2026-10-10 | Snake charm | Redrawn as an S-curve (diamond head, tail tapering to a point) lying along the string, replacing the coil | Shauna's reference: a simple S-shaped snake silhouette. Drawn fresh in code, not traced. Width 2.05 units; compartment thumbnails shrink long charms to fit. |
 | 2026-10-10 | Design board | A Claude design canvas with editable mockups built from the real CSS plus live screenshots | Shauna wanted somewhere to refine the screens. Built in the game's own look, not a design system (her pick). See `_docs/findings/2026-10-11-design-board.md`. |
@@ -216,7 +220,7 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 | 2026-10-11 | Pattern joining beads | Automatic partner color per strip color, no picker; Bubble keeps pearls | Claude's recommendation, Shauna approved. Keeps patterns one tap and makes Cross readable. |
 | 2026-10-11 | "Some of the beads are missing" | Resolved | Shauna: all good now (it was the empty compartments). |
 | 2026-10-11 | Stringing screen redesign | Proposal on the design board (phone and desktop "clear view"); not built until Shauna reviews, refines, and approves it there | Shauna: she wants to see the board and approve before anything is built. See `_docs/findings/2026-10-11-stringing-ux-review.md`. |
-| 2026-10-11 | Footer in the redesign | Moves below the fold; a way back to the games site is still needed on screen | Shauna: OK, she can add them back; asked for back-link ideas. |
+| 2026-10-11 | Footer in the redesign | Moves below the fold; a way back to the games site is still needed on screen | Shauna: OK, she can add them back; asked for back-link ideas. (Superseded 2026-11-03: the footer is gone.) |
 | 2026-10-11 | Desktop layout in the redesign | Bead case becomes a 360 px panel on the right, canvas takes the full height | Shauna approved the reviewer's idea. |
 | 2026-10-11 | Edit the sign from the wall | Tap the neon sign to open the sign editor, same limits (12 characters, letters, numbers, spaces, ! ? &) | Shauna asked. Reuses Decorate so there is one editor. |
 | 2026-10-11 | Stringing redesign | Built and live: controls off the canvas, command bar, fixed-height case, desktop right panel, footer below the fold | Shauna asked to see it on the live site after the boards. |
@@ -243,17 +247,23 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 | 2026-10-09 | Era presets | Approved in principle; placement and naming open | Shauna liked the idea. Trademark caution: no artist name, logos, cover art, or lyrics in the app. |
 | 2026-10-10 | Tabletop | Felt bead mat by default, wood selectable | Shauna asked to see felt. Photo scan (CC0), per the wood lesson that code-made textures look fake. |
 | 2026-10-09 | Workflow | Push finished work straight to `main`; never give local run commands | Shauna's rule: she checks on the live site. Recorded in `CLAUDE.md`. |
-| 2026-11-03 | One screen, no page scroll | The page never scrolls; the footer's links and fan note move to the More menu and start screen; an empty string shows a hint | Shauna: she had to scroll on her iPhone, and a blank string after adding to the collection looked like a glitch. |
-
 | 2026-11-02 | Name | Keep "13 Beads", add the subtitle "a friendship bracelet maker" | Shauna. Fans get the reference; the subtitle explains it to everyone else. |
 | 2026-11-02 | Launch polish | Start screen, logo mark and icons, link preview image, first-run steps, sample bracelet, ticket under the rail on an empty wall, bigger desktop beads, `?demo` recording mode | Shauna asked for all eight ideas from the pre-post review. |
 | 2026-11-02 | Empty wall | A sample bracelet on the first peg, and the ticket moved up | Supersedes 2026-10-12 "stays as one bare rail": new visitors from a post should see what the wall is for. |
 | 2026-11-02 | Wall look | Jewelry tray overview plus a close-up view of one bracelet at a time | Shauna did not like the wall and asked to see options 1 (tray) and 2 (lookbook) together, built straight to live. |
 | 2026-11-02 | Neon sign, fairy lights, ticket stub | Removed from view for now (code kept) | Shauna: remove them for now. |
 | 2026-11-02 | Label for the wall screen | "Collection" | Shauna, after the tray replaced the wall. |
+| 2026-11-03 | One screen, no page scroll | The page never scrolls; the footer's links and fan note move to the More menu and start screen; an empty string shows a hint | Shauna: she had to scroll on her iPhone, and a blank string after adding to the collection looked like a glitch. |
+| 2026-11-03 | Empty string after the collection | Surprise strings a bracelet on its own; the trash button clears it | Shauna: a blank string looked broken, and the player can always clear it. Only the three ways back from the collection trigger it, not Edit or Take a copy, which bring their own beads. |
+| 2026-11-03 | Bead tray snapping | Removed on every screen size | Her screen recording showed a tap on Surprise sliding the tray one column on some colors (sky, mint) and doing nothing. Snapping was a nicety; a tap that works matters more. |
 
 ## Wrong turns worth knowing
 
+- Session 9: "Surprise does nothing" was not reproducible in Chromium or WebKit with simulated taps, on any color or path back from the collection. Shauna's screen recording showed the cause: on some colors a tap slid the tray one column, hiding Surprise. Likely scroll snapping re-snapping under the finger, which makes iOS treat the touch as a scroll. Ask for a screen recording early for iPhone-only bugs. See `_docs/findings/2026-11-03-iphone-surprise-tap.md`.
+- Session 9: I told Shauna "Made by Shauna" was already in the More menu without checking; it was only in the footer. Check the markup before saying where something is.
+- Session 9: `pkill -f "vite preview"` killed the shell yet again (the command line contains the pattern). Never pkill.
+- Session 9: `add_repo` with push access was refused the first time, before Shauna had asked for changes; it went through once she asked for the updates.
+- Session 9: WebKit is not pre-installed, but `python3 -m playwright install webkit` downloads it into `/opt/pw-browsers` and `p.webkit.launch()` works with the `iPhone 13` device profile. No WebGL flags needed.
 - Session 7: "the wall doesn't load" could not be reproduced (live build matched `main`, no errors with many kinds of saved walls) and it fixed itself before a cause was found. Most likely a brief mismatch while a deploy or the offline copy updated. The staying-current check was added after. See `_docs/findings/2026-10-12-wall-load-bead-sizes.md`.
 - Session 7: "Surprise me is not working" was a race. The starter bracelet strung itself on with timers nothing could cancel, so a Surprise tapped in the first two seconds was buried under starter beads until the wrist was full. `stopStringing` now clears `starterTimers` too.
 - Session 7: `pkill -f "vite ..."` killed the shell a third time. Do not pkill at all; start servers with `setsid` on a fresh port and let the container reclaim them.
@@ -283,7 +293,7 @@ Last updated: 2026-10-12 (session 7). Everything below is on `main` and live, in
 - Session 5: the first commit carried an assistant co-author line from the session's default attribution. Shauna's rule (no AI credit) overrides it; the commit was amended within a minute. Check every commit message before pushing.
 - Session 5: I told Shauna the design board might be out of date without checking it. It was not. Compare the board with the live game before claiming drift.
 - Session 6: the `vite preview` server died between tool calls once (curl returned 000); start a fresh one on a new port with `setsid`, as in session 4.
-- Session 6: a `wheel` on the wall only scrolls the room when it is taller than the canvas; otherwise the event passes through and the page scrolls to the footer. Expected, but a test that wheels on a short wall gets a page scroll, not a wall scroll.
+- Session 6: a `wheel` on the wall only scrolls the room when it is taller than the canvas; otherwise the event passes through to the page. (Since 2026-11-03 the page itself never scrolls.)
 - Session 6: a tag hung beside the peg (mirrored on the last column so it stayed on stage) crossed the neighboring loop. Inside the loop, where the bracelet is bare, it reads cleanly and needs no mirroring.
 - Session 6: "Take a copy" from a visited wall did nothing until the mode was switched to `line` first, because the trade stringing only adds beads while stringing. Call `setMode('line')` before `receiveTrade` from anywhere but boot.
 - Session 6: Playwright's `mouse.wheel` and drag both scroll the wall fine; `$eval(click)` on `#popKeep` leaves a keyboard focus ring on the bracelet button (expected, as with the More menu).

@@ -1,6 +1,6 @@
 # 13 Beads
 
-A craft room in the browser, for the concert bracelet-trading crowd. The player strings a friendship bracelet in 3D, ties it off, and hangs it on a display wall. A portfolio piece by Shauna.
+A craft room in the browser, for the concert bracelet-trading crowd. The player strings a friendship bracelet in 3D, ties it off, and keeps it in a collection tray. A portfolio piece by Shauna.
 
 Read `_docs/PROJECT_STATUS.md` first, then `_docs/TODO.md`. `README.md` covers the code layout and how to add a bead.
 
@@ -15,9 +15,11 @@ Read `_docs/PROJECT_STATUS.md` first, then `_docs/TODO.md`. `README.md` covers t
 
 There is no test suite. The check is `npm run build` (must finish with no errors) plus looking at the result in a browser. In a cloud session, take screenshots with Playwright and the pre-installed Chromium, launched with `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`, at phone (400 x 780) and desktop sizes, in light and dark.
 
+For iPhone-only bugs, `python3 -m playwright install webkit` adds WebKit (use the `iPhone 13` device profile). Simulated taps do not reproduce iOS touch-versus-scroll problems, so ask Shauna for a screen recording early.
+
 ## Rules that must hold
 
-- Stack: Vite and Three.js, plain JavaScript modules, no framework, no backend, no accounts. Player data lives in local storage under `13beads.strand`, `13beads.stack` (one entry per hung bracelet: beads, tag name, date, trade flag; older saves of bare bead lists still load), `13beads.wall` (wall color, neon sign word, and sign color), `13beads.theme` (light or dark, once the player picks one), `13beads.color` (the color picked on the bead case's color strip), `13beads.table` (felt or wood tabletop), `13beads.seen` (the start screen has been passed once), and `13beads.sampled` (the sample bracelet has been hung once).
+- Stack: Vite and Three.js, plain JavaScript modules, no framework, no backend, no accounts. Player data lives in local storage under `13beads.strand`, `13beads.stack` (one entry per hung bracelet: beads, tag name, date, trade flag; older saves of bare bead lists still load), `13beads.wall` (tray lining color and the player's name, plus the sign word and prop switches still in code from the old wall), `13beads.theme` (light or dark, once the player picks one), `13beads.color` (the color picked on the bead case's color strip), `13beads.table` (felt or wood tabletop), `13beads.seen` (the start screen has been passed once), and `13beads.sampled` (the sample bracelet has been hung once).
 - `vite.config.js` keeps `base: './'`. The game is served both at a domain root and under `/13-beads`.
 - Third-party 3D models need a license that allows hosting on a public site (CC0 or CC BY), or written permission. See the heart-hands finding.
 - Mobile first. Every change is checked at phone width.
